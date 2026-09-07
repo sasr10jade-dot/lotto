@@ -27,6 +27,8 @@ const emailChipsWrapper = document.getElementById('email-chips-wrapper');
 const configReceiverEmailInput = document.getElementById('config-receiver-email-input');
 const configScheduleDay = document.getElementById('config-schedule-day');
 const configScheduleTime = document.getElementById('config-schedule-time');
+const configBirthDate = document.getElementById('config-birth-date');
+const configBirthTime = document.getElementById('config-birth-time');
 const cronPreview = document.getElementById('cron-preview');
 const cronDesc = document.getElementById('cron-desc');
 const btnDownloadConfig = document.getElementById('btn-download-config');
@@ -149,6 +151,12 @@ function initSystemConfig() {
         const savedNum = localStorage.getItem(`config_fixed_number_${idx + 1}`) || "";
         select.value = savedNum;
     });
+
+    // Restore Birth Date and Time of Birth from Local Storage
+    const savedBirthDate = localStorage.getItem('config_birth_date') || "";
+    const savedBirthTime = localStorage.getItem('config_birth_time') || "";
+    configBirthDate.value = savedBirthDate;
+    configBirthTime.value = savedBirthTime;
 
     updateCronPreview();
 }
@@ -483,6 +491,14 @@ function initEventListeners() {
         updateCronPreview();
     });
 
+    // Listeners for Birth Info (AI Fortune/Destiny)
+    configBirthDate.addEventListener('change', () => {
+        localStorage.setItem('config_birth_date', configBirthDate.value);
+    });
+    configBirthTime.addEventListener('change', () => {
+        localStorage.setItem('config_birth_time', configBirthTime.value);
+    });
+
     // Listeners for Fixed Numbers
     document.querySelectorAll('.fixed-num-select').forEach((select, idx) => {
         select.addEventListener('change', () => {
@@ -549,7 +565,9 @@ function downloadConfigJson() {
         schedule_day: daysEng[dayIndex],
         schedule_time: configScheduleTime.value,
         cron: cronPreview.textContent,
-        fixed_numbers: getSelectedFixedNumbers()
+        fixed_numbers: getSelectedFixedNumbers(),
+        birth_date: configBirthDate.value,
+        birth_time: configBirthTime.value
     };
 
     const blob = new Blob([JSON.stringify(configData, null, 2)], { type: 'application/json' });
@@ -618,10 +636,16 @@ async function handlePredictionGeneration() {
 
 async function getGeminiPredictions(apiKey) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-    
+
     const fixedNums = getSelectedFixedNumbers();
     const fixedConstraint = fixedNums.length > 0
         ? `\n[핵심 제약 조건] 사용자가 선호하는 고정수 번호 [${fixedNums.join(', ')}] 가 선택되어 있습니다. 생성하시는 추천 조합 A, B, C, D, E 모든 5가지 예측 번호 세트에는 이 지정된 고정수들([${fixedNums.join(', ')}])이 100% 무조건 포함되어 있어야 합니다. 이 숫자를 기반으로 조화로운 나머지 번호들을 완성해 주세요.`
+        : "";
+
+    const birthDateVal = configBirthDate.value;
+    const birthTimeVal = configBirthTime.value;
+    const birthConstraint = birthDateVal 
+        ? `\n[사주/운세 개인화 요구사항] 사용자의 생년월일은 [${birthDateVal}] 이고 태어난 명리학상 시간은 [${birthTimeVal || "모름"}] 입니다. 이 명식을 바탕으로 동양의 음양오행 사상(목, 화, 토, 금, 수) 및 이번 주 금전 횡재수를 재미있고 위트 있게 풀이하여 'analysis_report' 섹션에 최소 한 문단 이상 포함시켜 주세요. 또한 생성하시는 추천 번호에도 이 사주 명식 분석에 따라 기운이 통하는 행운 번호들을 조화롭게 배합하고 분석 리포트에 근거를 덧붙여주세요.`
         : "";
 
     const prompt = `
@@ -635,7 +659,7 @@ async function getGeminiPredictions(apiKey) {
 - 최근 5주간 가장 안 나왔던 콜드넘버: ${lottoStats.coldNumbers}
 - 가장 오랫동안 나오지 않은 번호 Top 5: ${lottoStats.longestUnseen.map(x => x.num)}
 - 최근 5주간 평균 합계: ${lottoStats.averageSum.toFixed(1)}
-- 최근 5주간 홀짝 비율: ${lottoStats.oddEvenRatio}${fixedConstraint}
+- 최근 5주간 홀짝 비율: ${lottoStats.oddEvenRatio}${fixedConstraint}${birthConstraint}
 
 요구사항:
 1. 번호 세트는 총 5개 생성해야 합니다. 각 세트는 중복 없는 1~45 사이의 자연수 6개로 이루어지며, 오름차순 정렬해야 합니다.

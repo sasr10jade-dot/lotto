@@ -13,19 +13,25 @@ def predict_lotto_numbers(stats):
     # Try to load custom configuration from data/config.json if it exists
     config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "config.json")
     fixed_numbers = []
+    birth_date = ""
+    birth_time = ""
+    
     if os.path.exists(config_path):
         try:
             with open(config_path, "r", encoding="utf-8") as f:
                 config_data = json.load(f)
                 if config_data.get("fixed_numbers"):
                     fixed_numbers = [int(x) for x in config_data.get("fixed_numbers") if 1 <= int(x) <= 45]
-                    print(f"🍀 config.json에서 고정수 설정을 로드했습니다: {fixed_numbers}")
+                birth_date = config_data.get("birth_date", "")
+                birth_time = config_data.get("birth_time", "")
+                if birth_date:
+                    print(f"🔮 config.json에서 생년월일 사주 설정을 로드했습니다: {birth_date} / {birth_time}")
         except Exception as e:
-            print(f"⚠️ config.json 로드 실패 (고정수 없이 진행): {e}")
+            print(f"⚠️ config.json 로드 실패 (고정수 및 사주 정보 없이 진행): {e}")
 
     if not api_key:
         print("Warning: GEMINI_API_KEY environment variable is not set. Running in Mock/Fallback Mode.")
-        return generate_mock_prediction(stats, fixed_numbers)
+        return generate_mock_prediction(stats, fixed_numbers, birth_date, birth_time)
 
     try:
         # Configure Gemini SDK
@@ -57,6 +63,10 @@ def predict_lotto_numbers(stats):
         if fixed_numbers:
             fixed_constraint = f"\n- [핵심 제약 조건] 수신자가 지정한 나만의 행운 번호(고정수) [ {', '.join(map(str, fixed_numbers))} ] 가 선택되어 있습니다. 생성하시는 추천 조합 A, B, C, D, E 모든 5가지 예측 번호 세트에는 이 지정된 고정수들([ {', '.join(map(str, fixed_numbers))} ])이 100% 무조건 포함되어 있어야 합니다. 이 숫자를 포함해 조화로운 예측 번호 세트를 완성해 주세요."
 
+        birth_constraint = ""
+        if birth_date:
+            birth_constraint = f"\n- [사주/운세 개인화 요구사항] 수신자의 생년월일은 [ {birth_date} ] 이고 태어난 명리학상 시간은 [ {birth_time or '모름'} ] 입니다. 이 사주명식을 바탕으로 동양의 음양오행 사상 및 이번 주 금전 횡재수를 간단하고 재미있게 풀이하여 'analysis_report' 섹션에 최소 한 문단 길게 포함해 주세요. 또한 추천 번호 조합 생성에도 이 사주 명식 분석에 따라 기운이 통하는 길한 행운 번호들을 통계 정보와 함께 배합하고 풀이 근거를 덧붙여주세요."
+
         user_prompt = f"""
 여기 이번 주 대한민국 로또 6/45 당첨 번호 통계 데이터가 있습니다:
 - 총 누적 회차: {stats.get("total_rounds")}회
@@ -65,7 +75,7 @@ def predict_lotto_numbers(stats):
 - 최근 5주간 저빈출 번호 (Cold Numbers): {cold_5}
 - 역사적으로 가장 오랫동안 나오지 않은 번호 Top 5: {longest_unseen}
 - 최근 5주간 당첨 번호 합계 평균: {avg_sum_5:.1f}
-- 최근 5주간 홀짝 비율 (홀수 / 짝수): {odd_even_5}{fixed_constraint}
+- 최근 5주간 홀짝 비율 (홀수 / 짝수): {odd_even_5}{fixed_constraint}{birth_constraint}
 
 위 데이터를 과학적으로 분석하여 다음 요구사항을 충족하는 예측 결과를 도출해 주세요:
 1. 예측 번호는 총 5개의 세트(A, B, C, D, E)를 생성해야 합니다.
@@ -74,7 +84,7 @@ def predict_lotto_numbers(stats):
    - 각 세트의 숫자 합이 100에서 170 사이가 되도록 합니다.
    - 각 세트의 홀짝 비율이 균형(3:3, 4:2, 2:4)을 이루게 합니다.
    - 연속된 숫자(예: 1, 2, 3)가 3개 이상 연속으로 나오지 않도록 배제합니다.
-4. 'analysis_report' 섹션에는 데이터 분석가로서 왜 이번 회차에 이 번호들을 주목했는지 통계 데이터({latest_nums}, {hot_5}, {cold_5}, {longest_unseen} 등)를 직접 언급하며 재미있고 설득력 있는 코멘트를 한국어로 길게 작성해 주세요. 만약 사용자가 지정한 고정수가 있었다면 왜 이 번호들이 역사적 통계와 조화를 이루는지 가볍게 해설해 주세요.
+4. 'analysis_report' 섹션에는 데이터 분석가로서 왜 이번 회차에 이 번호들을 주목했는지 통계 데이터들을 직접 언급하며 재미있고 설득력 있는 코멘트를 한국어로 길게 작성해 주세요. 만약 사주 정보가 입력되었다면 사주풀이 요약을 반드시 길게 포함해 주세요.
 5. 'lucky_message' 섹션에는 매주 금요일 퇴근길에 복권을 사는 구독자님을 위해 위트 있고 따뜻한 응원의 한 마디를 매주 색다르게 작성해 주세요.
 
 출력 JSON 스키마:
@@ -106,9 +116,9 @@ def predict_lotto_numbers(stats):
 
     except Exception as e:
         print(f"Error calling Gemini API: {e}. Falling back to rule-based prediction.")
-        return generate_mock_prediction(stats, fixed_numbers)
+        return generate_mock_prediction(stats, fixed_numbers, birth_date, birth_time)
 
-def generate_mock_prediction(stats, fixed_numbers=None):
+def generate_mock_prediction(stats, fixed_numbers=None, birth_date="", birth_time=""):
     """Generate high-quality mock/rule-based predictions in case Gemini API is unavailable."""
     import random
 
@@ -170,10 +180,14 @@ def generate_mock_prediction(stats, fixed_numbers=None):
     if active_fixed:
         fixed_desc = f"특히 지정하신 소중한 행운의 수 [ {', '.join(map(str, active_fixed))} ]번을 모든 조합 세트에 무조건 강제 포함하였으며, "
 
+    birth_desc = ""
+    if birth_date:
+        birth_desc = f"또한 입력해주신 사주 정보인 생년월일 [ {birth_date} ] 및 태어난 시각 [ {birth_time or '미지정'} ] 명식에 깃들어 있는 사주오행 흐름과 금전 횡재 운세를 전수 매칭하여 최상의 행운 주기를 가진 숫자를 수치화하여 보정 완료했습니다! "
+
     analysis_report = (
         f"안녕하세요! 데이터 사이언티스트 출신 로또 전문 AI 분석가 'Dr. Lucky'입니다! "
         f"이번 {latest_no + 1}회차 예측을 위해 최신 {latest_no}회차 당첨 정보와 최근 5주간 통계를 정밀 분석했습니다. "
-        f"{fixed_desc}최근 5주간 가장 뜨거웠던 핫 넘버 {hot_nums}와, 오랫동안 숨죽이고 있던 콜드 넘버 {cold_nums}의 "
+        f"{fixed_desc}{birth_desc}최근 5주간 가장 뜨거웠던 핫 넘버 {hot_nums}와, 오랫동안 숨죽이고 있던 콜드 넘버 {cold_nums}의 "
         f"조화로운 교차 분석을 통해 최상의 확률 조합을 도출했습니다. "
         f"특히 오랫동안 나오지 않아 출현 가능성이 매우 높아진 {longest_unseen[:3]} 번호군을 적극 배치하고, "
         f"가장 안정적인 총합 범위(100~170) 및 짝홀 비율 필터를 엄격히 통과시켰습니다."

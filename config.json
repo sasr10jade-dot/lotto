@@ -1,0 +1,10 @@
+{
+  "receiver_email": [
+    "jade@autocrypt.io",
+    "sasr10@naver.com"
+  ],
+  "schedule_day": "Friday",
+  "schedule_time": "18:00",
+  "cron": "0 9 * * 5",
+  "fixed_numbers": []
+}
