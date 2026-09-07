@@ -83,6 +83,22 @@ function initSystemConfig() {
     configScheduleDay.value = savedDay;
     configScheduleTime.value = savedTime;
 
+    // Populate 1-45 options in fixed number selects dynamically
+    const selects = document.querySelectorAll('.fixed-num-select');
+    selects.forEach((select, idx) => {
+        select.innerHTML = '<option value="">없음</option>';
+        for (let i = 1; i <= 45; i++) {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = i;
+            select.appendChild(opt);
+        }
+        
+        // Restore saved selection
+        const savedNum = localStorage.getItem(`config_fixed_number_${idx + 1}`) || "";
+        select.value = savedNum;
+    });
+
     updateCronPreview();
 }
 
@@ -112,6 +128,38 @@ function updateCronPreview() {
     // Set descriptive text
     const daysKor = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
     cronDesc.textContent = `매주 ${daysKor[dayVal]} ${timeVal} KST 자동 실행`;
+}
+
+function getSelectedFixedNumbers() {
+    const fixed = [];
+    document.querySelectorAll('.fixed-num-select').forEach(select => {
+        const val = select.value;
+        if (val) {
+            const num = parseInt(val);
+            if (!fixed.includes(num)) {
+                fixed.push(num);
+            }
+        }
+    });
+    return fixed.sort((a, b) => a - b);
+}
+
+function validateFixedNumbers() {
+    const selected = [];
+    const selects = document.querySelectorAll('.fixed-num-select');
+    
+    selects.forEach((select, idx) => {
+        const val = select.value;
+        if (val) {
+            if (selected.includes(val)) {
+                alert("경고: 이미 다른 칸에 지정된 행운 번호입니다. 중복 선택되었습니다!");
+                select.value = "";
+                localStorage.setItem(`config_fixed_number_${idx + 1}`, "");
+            } else {
+                selected.push(val);
+            }
+        }
+    });
 }
 
 // 3. LOTTO DATA COLLECTION & STATS CALCULATION
@@ -296,6 +344,14 @@ function initEventListeners() {
         updateCronPreview();
     });
 
+    // Listeners for Fixed Numbers
+    document.querySelectorAll('.fixed-num-select').forEach((select, idx) => {
+        select.addEventListener('change', () => {
+            localStorage.setItem(`config_fixed_number_${idx + 1}`, select.value);
+            validateFixedNumbers();
+        });
+    });
+
     // Download Config
     btnDownloadConfig.addEventListener('click', downloadConfigJson);
 
@@ -353,7 +409,8 @@ function downloadConfigJson() {
         receiver_email: email,
         schedule_day: daysEng[dayIndex],
         schedule_time: configScheduleTime.value,
-        cron: cronPreview.textContent
+        cron: cronPreview.textContent,
+        fixed_numbers: getSelectedFixedNumbers()
     };
 
     const blob = new Blob([JSON.stringify(configData, null, 2)], { type: 'application/json' });
@@ -423,6 +480,11 @@ async function handlePredictionGeneration() {
 async function getGeminiPredictions(apiKey) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     
+    const fixedNums = getSelectedFixedNumbers();
+    const fixedConstraint = fixedNums.length > 0
+        ? `\n[핵심 제약 조건] 사용자가 선호하는 고정수 번호 [${fixedNums.join(', ')}] 가 선택되어 있습니다. 생성하시는 추천 조합 A, B, C, D, E 모든 5가지 예측 번호 세트에는 이 지정된 고정수들([${fixedNums.join(', ')}])이 100% 무조건 포함되어 있어야 합니다. 이 숫자를 기반으로 조화로운 나머지 번호들을 완성해 주세요.`
+        : "";
+
     const prompt = `
 당신은 로또 전문 AI 데이터 과학자 'Dr. Lucky'입니다. 
 다음 제공하는 이번 주 로또 6/45 통계 데이터를 기반으로 추천 번호 5세트(A, B, C, D, E)를 생성하고 유쾌한 통계 분석글을 한국어로 작성해 주세요.
@@ -434,15 +496,15 @@ async function getGeminiPredictions(apiKey) {
 - 최근 5주간 가장 안 나왔던 콜드넘버: ${lottoStats.coldNumbers}
 - 가장 오랫동안 나오지 않은 번호 Top 5: ${lottoStats.longestUnseen.map(x => x.num)}
 - 최근 5주간 평균 합계: ${lottoStats.averageSum.toFixed(1)}
-- 최근 5주간 홀짝 비율: ${lottoStats.oddEvenRatio}
+- 최근 5주간 홀짝 비율: ${lottoStats.oddEvenRatio}${fixedConstraint}
 
 요구사항:
 1. 번호 세트는 총 5개 생성해야 합니다. 각 세트는 중복 없는 1~45 사이의 자연수 6개로 이루어지며, 오름차순 정렬해야 합니다.
 2. 각 세트는 반드시 숫자 합계가 100~170 사이여야 합니다.
 3. 홀짝 비율은 3:3, 4:2, 2:4 중 하나여야 합니다.
 4. 3개 이상 연속되는 번호 조합(예: 1, 2, 3)은 필터링하여 배제해 주세요.
-5. 'analysis_report' SECTION에는 데이터 분석가로서 왜 이번 회차에 이 번호들을 주목했는지 통계 데이터들을 논리적으로 언급하며 한국어로 유쾌하게 설명해 주세요.
-6. 'lucky_message' SECTION에는 이번 주말 복권을 사러 가는 구독자를 격려하는 센스 있고 희망찬 멘트를 한국어로 작성해 주세요.
+5. 'analysis_report' 섹션에는 데이터 분석가로서 왜 이번 회차에 이 번호들을 주목했는지 통계 데이터들을 논리적으로 언급하며 한국어로 유쾌하게 설명해 주세요. 만약 사용자가 지정한 고정수가 있었다면 왜 이 번호들이 역사적 통계와 조화를 이루는지 가볍게 해설해 주세요.
+6. 'lucky_message' 섹션에는 이번 주말 복권을 사러 가는 구독자를 격려하는 센스 있고 희망찬 멘트를 한국어로 작성해 주세요.
 
 출력은 반드시 다른 부연 설명 없는 완벽한 JSON 포맷이어야 합니다:
 {
@@ -484,9 +546,11 @@ async function getGeminiPredictions(apiKey) {
 
 function getMockPredictions() {
     const predictions = [];
+    const fixedNums = getSelectedFixedNumbers();
+    const activeFixed = fixedNums.slice(0, 5); // Max 5 fixed numbers
     
     while (predictions.length < 5) {
-        const candidate = [];
+        const candidate = [...activeFixed];
         while (candidate.length < 6) {
             const num = Math.floor(Math.random() * 45) + 1;
             if (!candidate.includes(num)) candidate.push(num);
@@ -516,8 +580,14 @@ function getMockPredictions() {
         }
     }
 
+    let report = `[Mock 모드] 안녕하세요, Dr. Lucky입니다! 현재 API 키가 비어 있어 저의 데이터 엔진 핵심 룰 필터만 통과한 고품질 시뮬레이션 조합을 도출했습니다. `;
+    if (activeFixed.length > 0) {
+        report += `특히 직접 지정하신 소중한 고정수 **[${activeFixed.join(', ')}]**번을 모든 조합 세트에 무조건 강제 포함하였으며, `;
+    }
+    report += `최근에 가장 많이 나온 번호들인 ${lottoStats.hotNumbers}과, 오랜 기간 조용했던 콜드 넘버들인 ${lottoStats.coldNumbers}의 주기성을 훌륭하게 배합했습니다. 특히 총합 범위(${lottoStats.averageSum.toFixed(0)} 내외)를 엄격히 한정하여 1등 확률에 근접하도록 보정했습니다!`;
+
     return {
-        analysis_report: `[Mock 모드] 안녕하세요, Dr. Lucky입니다! 현재 API 키가 비어 있어 저의 데이터 엔진 핵심 룰 필터만 통과한 고품질 시뮬레이션 조합을 도출했습니다. 최근에 가장 많이 나온 번호들인 ${lottoStats.hotNumbers}과, 오랜 기간 조용했던 콜드 넘버들인 ${lottoStats.coldNumbers}의 주기성을 훌륭하게 배합했습니다. 특히 총합 범위(${lottoStats.averageSum.toFixed(0)} 내외)를 엄격히 한정하여 1등 확률에 근접하도록 보정했습니다!`,
+        analysis_report: report,
         predictions: predictions,
         lucky_message: "복권은 일주일 동안 설렘이라는 행복을 미리 사는 기분 좋은 마법입니다. 제가 고안해 낸 이 특별한 조합의 번호와 함께 이번 주말 멋진 기적이 당신에게 닿기를 희망합니다! 파이팅! 🍀"
     };
@@ -624,6 +694,11 @@ function removeTypingIndicator(id) {
 async function getGeminiChatResponse(userMessage, apiKey) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
+    const fixedNums = getSelectedFixedNumbers();
+    const fixedContextText = fixedNums.length > 0
+        ? `또한 사용자는 나만의 행운 번호(고정수)로 [${fixedNums.join(', ')}] 번을 선택하여 저장한 상태입니다. 이 번호들을 왜 선택했는지 지지해주고, 번호를 생성/추천해 달라고 할 때는 가급적 이 번호들을 포함해서 조합을 꾸려주세요.`
+        : "";
+
     // System prompt with complete real-time stats context injected
     const systemPrompt = `
 You are 'Dr. Lucky', an energetic, highly encouraging, and brilliant AI Lotto Analyst. 
@@ -637,6 +712,7 @@ You have direct access to the live lottery stats database from the client:
 - Longest unseen numbers (Top 5): ${lottoStats.longestUnseen.map(x => `${x.num} (${x.drawsAgo} draws ago)`).join(', ')}
 - Average sum of last 5 draws: ${lottoStats.averageSum.toFixed(1)}
 - Odd/Even ratio (last 5 draws): ${lottoStats.oddEvenRatio}
+${fixedContextText}
 
 Guidelines:
 1. When asked about frequencies, unseen numbers, sums, or trends, use the real-time statistics provided above.
@@ -645,7 +721,6 @@ Guidelines:
 `;
 
     // Package the history along with the system prompt inside the contents
-    // Gemini 1.5 Flash treats the first system instruction well
     const contents = [
         { role: 'user', parts: [{ text: systemPrompt }] },
         { role: 'model', parts: [{ text: "접수 완료! 'Dr. Lucky' 가동합니다. 대시보드 당첨 데이터 통계를 인지했습니다. 무엇이든 질문해 주세요!" }] }
@@ -687,10 +762,15 @@ function getMockChatResponse(msg) {
     }
 
     if (query.includes('생일') || query.includes('포함') || query.includes('추천') || query.includes('번호')) {
-        const numbersInMsg = msg.match(/\d+/g);
-        let included = [];
-        if (numbersInMsg) {
-            included = numbersInMsg.map(Number).filter(n => n >= 1 && n <= 45).slice(0, 3);
+        const fixedNums = getSelectedFixedNumbers();
+        let included = [...fixedNums];
+        
+        // If they didn't specify fixed numbers in UI but typed some, extract them
+        if (included.length === 0) {
+            const numbersInMsg = msg.match(/\d+/g);
+            if (numbersInMsg) {
+                included = numbersInMsg.map(Number).filter(n => n >= 1 && n <= 45).slice(0, 3);
+            }
         }
 
         const customSet = [...included];
@@ -702,7 +782,7 @@ function getMockChatResponse(msg) {
 
         let response = `🍀 Dr. Lucky가 추천하는 맞춤형 번호 조합입니다! \n\n`;
         if (included.length > 0) {
-            response += `구독자님이 지정하신 소중한 행운의 수 **${included.join(', ')}**번을 완벽히 포함하고, 제 데이터 필터로 수학적 안전성을 가미한 특별 세트를 마련했습니다: \n\n`;
+            response += `지정하신 소중한 행운의 수 **${included.join(', ')}**번을 완벽히 포함하고, 제 데이터 필터로 수학적 안전성을 가미한 특별 세트를 마련했습니다: \n\n`;
         } else {
             response += `제 룰 필터를 거쳐 탄생한 이번 주의 황금 추천 세트입니다: \n\n`;
         }
