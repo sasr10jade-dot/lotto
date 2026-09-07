@@ -148,10 +148,21 @@ function renderEmailChips() {
     receiverEmails.forEach((email, idx) => {
         const chip = document.createElement('div');
         chip.className = 'email-chip';
+        chip.title = "더블 클릭하여 수정";
         chip.innerHTML = `
             <span>${email}</span>
             <button class="remove-chip-btn" data-index="${idx}"><i class="fa-solid fa-xmark"></i></button>
         `;
+        
+        // Double-click on chip to load back into input for quick editing
+        chip.addEventListener('dblclick', () => {
+            configReceiverEmailInput.value = email;
+            receiverEmails.splice(idx, 1);
+            localStorage.setItem('config_receiver_emails', JSON.stringify(receiverEmails));
+            renderEmailChips();
+            configReceiverEmailInput.focus();
+        });
+
         emailChipsWrapper.appendChild(chip);
     });
 
