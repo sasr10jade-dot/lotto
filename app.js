@@ -211,45 +211,35 @@ function calculateStatistics() {
     const totalRounds = lottoHistory.length;
     const latestRound = lottoHistory[totalRounds - 1];
 
-    // Overall Frequencies
+    // All-Time Cumulative Frequencies & Ratios
     const freq = Array(46).fill(0);
+    let allTimeSumTotal = 0;
+    let allTimeOddCount = 0;
+    let allTimeNumCount = 0;
+
     lottoHistory.forEach(draw => {
-        numberCols.forEach(col => {
-            freq[draw[col]]++;
-        });
-    });
-
-    // Recent Frequencies (Last 5 weeks)
-    const recentWeeks = 5;
-    const recentFreq = Array(46).fill(0);
-    const recentDraws = lottoHistory.slice(-recentWeeks);
-    let recentSumTotal = 0;
-    let recentOddCount = 0;
-    let recentNumberCount = 0;
-
-    recentDraws.forEach(draw => {
         let drawSum = 0;
         numberCols.forEach(col => {
             const num = draw[col];
-            recentFreq[num]++;
+            freq[num]++;
             drawSum += num;
-            if (num % 2 !== 0) recentOddCount++;
-            recentNumberCount++;
+            if (num % 2 !== 0) allTimeOddCount++;
+            allTimeNumCount++;
         });
-        recentSumTotal += drawSum;
+        allTimeSumTotal += drawSum;
     });
 
-    // Sort recent frequency to get Hot and Cold numbers
-    const recentFreqMapped = recentFreq.map((count, num) => ({ num, count })).slice(1);
+    // Map all frequencies (excluding index 0)
+    const allTimeFreqMapped = freq.map((count, num) => ({ num, count })).slice(1);
     
-    // Hot numbers (Top 5 in last 5 weeks)
-    const hotNumbers = [...recentFreqMapped]
+    // Hot numbers (Top 5 of all time)
+    const hotNumbers = [...allTimeFreqMapped]
         .sort((a, b) => b.count - a.count || b.num - a.num)
         .slice(0, 5)
         .map(x => x.num);
 
-    // Cold numbers (Bottom 5 in last 5 weeks)
-    const coldNumbers = [...recentFreqMapped]
+    // Cold numbers (Bottom 5 of all time)
+    const coldNumbers = [...allTimeFreqMapped]
         .sort((a, b) => a.count - b.count || a.num - b.num)
         .slice(0, 5)
         .map(x => x.num);
@@ -279,8 +269,8 @@ function calculateStatistics() {
         hotNumbers,
         coldNumbers,
         longestUnseen,
-        averageSum: recentSumTotal / recentWeeks,
-        oddEvenRatio: `${((recentOddCount / recentNumberCount) * 100).toFixed(1)}% / ${(((recentNumberCount - recentOddCount) / recentNumberCount) * 100).toFixed(1)}%`
+        averageSum: allTimeSumTotal / totalRounds,
+        oddEvenRatio: `${((allTimeOddCount / allTimeNumCount) * 100).toFixed(1)}% / ${(((allTimeNumCount - allTimeOddCount) / allTimeNumCount) * 100).toFixed(1)}%`
     };
 }
 
