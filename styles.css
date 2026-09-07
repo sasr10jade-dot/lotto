@@ -22,10 +22,36 @@
     --glass-border: rgba(255, 255, 255, 0.08);
 }
 
+/* GENERAL LIGHT MODE OVERRIDES */
+body.light-mode {
+    --bg-primary: #f1f5f9;       /* Light blue-slate background */
+    --bg-secondary: #ffffff;     /* White card container */
+    --bg-tertiary: #cbd5e1;      /* Mid slate border/hover */
+    --text-primary: #0f172a;     /* Slate 900 text */
+    --text-muted: #64748b;       /* Slate 500 sub-text */
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(15, 23, 42, 0.08);
+}
+
+/* HIDE SCROLLBARS GLOBALLY */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+*::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* SMOOTH THEMING TRANSITIONS */
+body, .card, .panel, input, select, textarea, .bubble, header, .stats-item, .chat-input-area, code, .chip, .btn {
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s ease;
 }
 
 body {

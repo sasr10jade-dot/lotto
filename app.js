@@ -7,6 +7,8 @@ let chatHistory = []; // For multi-turn conversational chat with Gemini
 const apiKeyInput = document.getElementById('gemini-api-key');
 const saveKeyBtn = document.getElementById('save-api-key');
 const apiStatusBadge = document.getElementById('api-status-badge');
+const themeToggleBtn = document.getElementById('theme-toggle');
+const themeIcon = document.getElementById('theme-icon');
 
 const latestRoundNum = document.getElementById('latest-round-num');
 const latestDrawDate = document.getElementById('latest-draw-date');
@@ -41,7 +43,8 @@ const quickChips = document.querySelectorAll('.chip');
 
 // INITIALIZE APP
 window.addEventListener('DOMContentLoaded', async () => {
-    // 1. Load Gemini API Key and System Configuration
+    // 1. Load Theme, Gemini API Key and System Configuration
+    initTheme();
     initApiKey();
     initSystemConfig();
 
@@ -52,6 +55,20 @@ window.addEventListener('DOMContentLoaded', async () => {
     // 3. Register Event Listeners
     initEventListeners();
 });
+
+// THEME CONFIGURATION MANAGEMENT
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-mode');
+        themeIcon.className = "fa-solid fa-moon";
+        themeIcon.style.color = "#a78bfa"; // Soft purple for moon
+    } else {
+        document.body.classList.remove('light-mode');
+        themeIcon.className = "fa-solid fa-sun";
+        themeIcon.style.color = "#fbbf24"; // Bright amber for sun
+    }
+}
 
 // 1. API KEY MANAGEMENT
 function initApiKey() {
@@ -318,6 +335,20 @@ function renderDashboard() {
 
 // 5. EVENT LISTENERS SETUP
 function initEventListeners() {
+    // Theme Toggle Listener
+    themeToggleBtn.addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
+        if (document.body.classList.contains('light-mode')) {
+            localStorage.setItem('theme', 'light');
+            themeIcon.className = "fa-solid fa-moon";
+            themeIcon.style.color = "#a78bfa"; // Moon purple
+        } else {
+            localStorage.setItem('theme', 'dark');
+            themeIcon.className = "fa-solid fa-sun";
+            themeIcon.style.color = "#fbbf24"; // Sun gold
+        }
+    });
+
     // Save API Key
     saveKeyBtn.addEventListener('click', () => {
         const key = apiKeyInput.value.trim();
