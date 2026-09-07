@@ -495,6 +495,15 @@ function initEventListeners() {
     configBirthDate.addEventListener('change', () => {
         localStorage.setItem('config_birth_date', configBirthDate.value);
     });
+    configBirthDate.addEventListener('click', () => {
+        try {
+            if (typeof configBirthDate.showPicker === 'function') {
+                configBirthDate.showPicker();
+            }
+        } catch (e) {
+            console.log("showPicker API not supported in this browser:", e);
+        }
+    });
     configBirthTime.addEventListener('change', () => {
         localStorage.setItem('config_birth_time', configBirthTime.value);
     });
