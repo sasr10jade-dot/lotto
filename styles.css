@@ -877,12 +877,60 @@ body.light-mode .email-chip .remove-chip-btn:hover {
     }
     
     #top-nav {
-        flex-direction: column;
-        gap: 12px;
-        padding: 16px;
+        flex-direction: row; /* Keep as a single horizontal row! */
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 16px;
+        gap: 10px;
     }
     
     .api-key-container {
-        max-width: 100%;
+        max-width: 350px; /* Compress container slightly */
+        margin: 0;
+        gap: 6px;
+    }
+    
+    #api-status-badge {
+        font-size: 9.5px;
+        padding: 2px 6px;
+    }
+    
+    #top-nav .logo span {
+        font-size: 14px;
+    }
+}
+
+/* EXTRA SMALL MOBILE BREAKPOINT (Under 520px) */
+@media (max-width: 520px) {
+    #top-nav {
+        padding: 8px 12px;
+        gap: 6px;
+    }
+    
+    #top-nav .logo span {
+        display: none; /* Only show the robot icon to maximize space! */
+    }
+    
+    .api-key-container {
+        max-width: 180px;
+        padding: 4px 6px;
+    }
+    
+    #gemini-api-key {
+        font-size: 11px;
+    }
+    
+    #api-status-badge {
+        display: none; /* Hide status badge on extremely narrow screens to preserve single row layout! */
+    }
+    
+    #save-api-key {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+    
+    .btn-theme {
+        font-size: 18px;
+        padding: 6px;
     }
 }
