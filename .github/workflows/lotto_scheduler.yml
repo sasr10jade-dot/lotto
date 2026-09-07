@@ -40,9 +40,9 @@ jobs:
         run: python src/main.py
 
       - name: Commit and Push Updated Lotto Data
-        # 메일 발송 성공 후 새 회차가 추가되어 data/lotto_history.json에 변경이 생긴 경우에만 깃허브에 다시 커밋
+        # 메일 발송 성공 후 로또 최신 회차 데이터나 이메일 발송 이력이 추가되었을 때 깃허브에 다시 커밋
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/lotto_history.json
-          git diff-index --quiet HEAD || (git commit -m "chore: update lotto database" && git push)
+          git add data/lotto_history.json data/dispatch_history.json
+          git diff-index --quiet HEAD || (git commit -m "chore: update lotto database and dispatch history" && git push)

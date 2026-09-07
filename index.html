@@ -172,6 +172,34 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- DISPATCH HISTORY CARD -->
+                <div class="card history-card" style="margin-top:4px;">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-clock-rotate-left text-purple"></i> 리포트 이메일 발송 이력</h3>
+                        <span class="badge badge-success">서버 연동 완료</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="dispatch-history-container" style="overflow-x:auto;">
+                            <table class="prediction-table" style="width:100%; border-collapse:collapse; min-width:450px;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--glass-border); color:var(--text-muted); text-align:left; font-size:12px;">
+                                        <th style="padding:10px 6px; width:140px;">발송 일시 / 회차</th>
+                                        <th style="padding:10px 6px; width:140px;">수신인 이메일</th>
+                                        <th style="padding:10px 6px;">발송 추천 조합 (A~E 세트)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-rows">
+                                    <tr>
+                                        <td colspan="3" style="text-align:center; padding:20px; color:var(--text-muted);">
+                                            <i class="fa-solid fa-spinner fa-spin"></i> 이력을 불러오는 중...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- RIGHT PANEL: INTERACTIVE COPILOT CHAT -->

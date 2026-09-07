@@ -45,8 +45,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     initApiKey();
     initSystemConfig();
 
-    // 2. Fetch and Analyze Lotto History
+    // 2. Fetch and Analyze Lotto History & Dispatch History
     await initLottoData();
+    await initDispatchHistory();
 
     // 3. Register Event Listeners
     initEventListeners();
@@ -797,4 +798,73 @@ function getMockChatResponse(msg) {
     }
 
     return `💡 **[Mock 모드 알림]** Dr. Lucky의 AI 회로(Gemini API Key)가 아직 상단에 등록되지 않아, 내장된 룰 베이스 엔진으로 답변해 드렸습니다!\n\nGemini API Key를 상단 바에 등록하시면, 구독자님의 질문 흐름을 완전하게 이해하고 나아가 사주풀이, 재미있는 통계 추론, 깊이 있는 예측 코멘트까지 실시간으로 창작하여 맞대응해 드립니다. 구글 AI Studio에서 무료 키를 발급받아 붙여보세요! 🚀`;
+}
+
+// 9. DISPATCH HISTORY LOG LOADING AND RENDERING
+async function initDispatchHistory() {
+    const historyRows = document.getElementById('history-rows');
+    if (!historyRows) return;
+    
+    try {
+        console.log("Fetching dispatch_history.json...");
+        const response = await fetch('./data/dispatch_history.json');
+        if (!response.ok) {
+            throw new Error("No history found");
+        }
+        const historyData = await response.json();
+        
+        if (!historyData || historyData.length === 0) {
+            historyRows.innerHTML = `
+            <tr>
+                <td colspan="3" style="text-align:center; padding:30px; color:var(--text-muted); font-size:12.5px;">
+                    <i class="fa-solid fa-circle-info" style="font-size:16px; color:var(--color-accent); margin-bottom:6px;"></i><br>
+                    아직 정기 이메일 발송 이력이 없습니다.<br>금요일 저녁 자동 발송 완료 후 이력이 저장됩니다!
+                </td>
+            </tr>`;
+            return;
+        }
+
+        // Sort descending by round or date so newest are on top
+        historyData.sort((a, b) => b.round_no - a.round_no || new Date(b.dispatch_date) - new Date(a.dispatch_date));
+
+        let rowsHtml = "";
+        historyData.forEach(item => {
+            // Format predictions nicely
+            let setsHtml = "";
+            if (item.predictions && item.predictions.length > 0) {
+                item.predictions.forEach((set, idx) => {
+                    const letter = String.fromCharCode(65 + idx); // A, B, C, D, E
+                    setsHtml += `<div style="margin: 3px 0; font-size:11.5px; line-height:1.4;"><b>[${letter}세트]</b> ${set.map(x => String(x).padStart(2, '0')).join(', ')}</div>`;
+                });
+            } else {
+                setsHtml = `<span style="color:var(--text-muted);">조합 정보 없음</span>`;
+            }
+
+            rowsHtml += `
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                <td style="padding:12px 6px; font-weight:bold; color:var(--text-primary); font-size:12.5px; line-height:1.4; vertical-align: top;">
+                    ${item.round_no}회 예측 발송<br>
+                    <span style="font-size:10px; color:var(--text-muted); font-weight:normal;">${item.dispatch_date}</span>
+                </td>
+                <td style="padding:12px 6px; color:var(--text-muted); font-size:12px; vertical-align: top; word-break: break-all; font-weight: 500;">
+                    ${item.receiver_email}
+                </td>
+                <td style="padding:12px 6px; font-family:monospace; color:var(--color-primary); font-size:12px; line-height:1.3; vertical-align: top;">
+                    ${setsHtml}
+                </td>
+            </tr>`;
+        });
+        historyRows.innerHTML = rowsHtml;
+
+    } catch (error) {
+        console.log("No dispatch history file found or failed to load. Showing placeholder.");
+        historyRows.innerHTML = `
+        <tr>
+            <td colspan="3" style="text-align:center; padding:40px; color:var(--text-muted); font-size:12.5px; line-height:1.5;">
+                <i class="fa-solid fa-clock-rotate-left" style="font-size:22px; margin-bottom:10px; color:var(--bg-tertiary);"></i><br>
+                <b>아직 누적된 정기 자동 발송 이력이 없습니다.</b><br>
+                <span style="font-size:11px; opacity:0.75; display:inline-block; margin-top:4px;">(매주 정기 자동 발송 스케줄이 성공적으로 작동하면 이력이 여기에 자동으로 누적 기록됩니다)</span>
+            </td>
+        </tr>`;
+    }
 }

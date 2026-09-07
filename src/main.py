@@ -12,6 +12,44 @@ from mailer import build_email_html, send_email
 # Load local environment variables (.env file)
 load_dotenv()
 
+def log_dispatch(round_no, receiver_email, predictions):
+    """Log a successful email dispatch to data/dispatch_history.json."""
+    import json
+    from datetime import datetime
+    
+    data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+    dispatch_file = os.path.join(data_dir, "dispatch_history.json")
+    
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+        
+    history = []
+    if os.path.exists(dispatch_file):
+        try:
+            with open(dispatch_file, "r", encoding="utf-8") as f:
+                history = json.load(f)
+        except Exception as e:
+            print(f"⚠️ Error reading dispatch history file: {e}")
+            
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    new_entry = {
+        "round_no": round_no,
+        "receiver_email": receiver_email or "Unknown",
+        "dispatch_date": now_str,
+        "predictions": predictions.get("predictions", []),
+        "status": "success"
+    }
+    
+    history.append(new_entry)
+    
+    try:
+        with open(dispatch_file, "w", encoding="utf-8") as f:
+            json.dump(history, f, indent=2, ensure_ascii=False)
+        print(f"📝 이메일 발송 이력이 적재되었습니다: {dispatch_file}")
+    except Exception as e:
+        print(f"⚠️ Error saving dispatch history: {e}")
+
 def main():
     print("=" * 60)
     print("🚀 Starting AI Lotto Analyst Agent Job...")
@@ -70,6 +108,22 @@ def main():
         latest_round = stats.get("latest_round_no", 0)
         success = send_email(html_body, latest_round)
         if success:
+            # Resolve receiver email for logging
+            receiver_email = os.getenv("RECEIVER_EMAIL")
+            config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "config.json")
+            if os.path.exists(config_path):
+                try:
+                    import json
+                    with open(config_path, "r", encoding="utf-8") as f:
+                        cfg = json.load(f)
+                        if cfg.get("receiver_email"):
+                            receiver_email = cfg.get("receiver_email")
+                except:
+                    pass
+            
+            # Log the successful dispatch
+            log_dispatch(latest_round + 1, receiver_email, predictions)
+            
             print("\n🎉 AI Lotto Agent Job Completed Successfully!")
             print("=" * 60)
         else:
