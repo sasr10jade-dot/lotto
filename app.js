@@ -122,6 +122,16 @@ function initSystemConfig() {
     const savedTime = localStorage.getItem('config_schedule_time') || "18:00"; // Default 18:00
 
     configScheduleDay.value = savedDay;
+
+    // Dynamically populate 24-hour options (00:00 to 23:00) into select dropdown
+    configScheduleTime.innerHTML = '';
+    for (let i = 0; i < 24; i++) {
+        const hourStr = String(i).padStart(2, '0') + ":00";
+        const opt = document.createElement('option');
+        opt.value = hourStr;
+        opt.textContent = hourStr;
+        configScheduleTime.appendChild(opt);
+    }
     configScheduleTime.value = savedTime;
 
     // Populate 1-45 options in fixed number selects dynamically
