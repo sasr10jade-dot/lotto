@@ -478,7 +478,7 @@ function initEventListeners() {
         localStorage.setItem('config_schedule_day', configScheduleDay.value);
         updateCronPreview();
     });
-    configScheduleTime.addEventListener('input', () => {
+    configScheduleTime.addEventListener('change', () => {
         localStorage.setItem('config_schedule_time', configScheduleTime.value);
         updateCronPreview();
     });

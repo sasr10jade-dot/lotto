@@ -112,6 +112,7 @@ body {
     padding: 4px 10px;
     max-width: 500px;
     width: 100%;
+    flex-wrap: nowrap; /* 내부 요소가 절대 개행(줄바꿈)되지 않도록 방지 */
 }
 
 .api-key-container .key-icon {
@@ -124,7 +125,13 @@ body {
     outline: none;
     color: var(--text-primary);
     font-size: 13px;
-    width: 100%;
+    flex-grow: 1; /* 남는 모든 너비 확보 */
+    width: auto;  /* 100% 강제 해제 */
+    min-width: 80px; /* 유연하게 줄어들 수 있도록 최소 너비 한정 */
+}
+
+#save-api-key, #api-status-badge {
+    flex-shrink: 0; /* 인풋창이 좁아져도 저장 버튼과 배지가 절대 찌그러지거나 줄바꿈되지 않게 고정 */
 }
 
 .api-key-container input::placeholder {
