@@ -86,8 +86,13 @@
                     <div class="card-body">
                         <div class="config-grid">
                             <div class="config-item">
-                                <label for="config-receiver-email"><i class="fa-solid fa-envelope"></i> 수신인 이메일 주소</label>
-                                <input type="email" id="config-receiver-email" placeholder="example@naver.com" class="input-field">
+                                <label><i class="fa-solid fa-envelope"></i> 수신인 이메일 주소 (다중 등록 가능)</label>
+                                <div class="email-chips-input-container" id="email-chips-container" style="background-color: var(--bg-primary); border: 1px solid var(--glass-border); border-radius: var(--border-radius-sm); padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 44px; transition: border-color 0.2s; cursor: text;">
+                                    <div id="email-chips-wrapper" style="display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+                                        <!-- Chips will be dynamically injected here by JS -->
+                                    </div>
+                                    <input type="text" id="config-receiver-email-input" placeholder="이메일 입력 후 Enter 또는 쉼표(,)" class="chips-input" style="flex:1; background:transparent; border:none; outline:none; color:var(--text-primary); font-size:13px; min-width:180px; padding:6px 0;">
+                                </div>
                             </div>
                             <div class="config-item-row">
                                 <div class="config-item" style="flex: 1;">

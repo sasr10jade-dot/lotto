@@ -2,6 +2,7 @@
 let lottoHistory = [];
 let lottoStats = {};
 let chatHistory = []; // For multi-turn conversational chat with Gemini
+let receiverEmails = []; // For multi-recipient list
 
 // DOM ELEMENTS
 const apiKeyInput = document.getElementById('gemini-api-key');
@@ -21,7 +22,9 @@ const averageSumEl = document.getElementById('average-sum');
 const oddEvenRatioEl = document.getElementById('odd-even-ratio');
 
 // SYSTEM CONFIGURATION DOM ELEMENTS
-const configReceiverEmail = document.getElementById('config-receiver-email');
+const emailChipsContainer = document.getElementById('email-chips-container');
+const emailChipsWrapper = document.getElementById('email-chips-wrapper');
+const configReceiverEmailInput = document.getElementById('config-receiver-email-input');
 const configScheduleDay = document.getElementById('config-schedule-day');
 const configScheduleTime = document.getElementById('config-schedule-time');
 const cronPreview = document.getElementById('cron-preview');
@@ -93,11 +96,31 @@ function updateApiBadge(isConfigured) {
 
 // 2. SYSTEM CONFIGURATION MANAGEMENT
 function initSystemConfig() {
-    const savedEmail = localStorage.getItem('config_receiver_email') || "";
+    // Load emails list from Local Storage
+    const savedEmailsStr = localStorage.getItem('config_receiver_emails');
+    if (savedEmailsStr) {
+        try {
+            receiverEmails = JSON.parse(savedEmailsStr);
+        } catch (e) {
+            receiverEmails = [];
+        }
+    } else {
+        // Fallback & Migrate legacy single email settings
+        const oldEmail = localStorage.getItem('config_receiver_email');
+        if (oldEmail) {
+            receiverEmails = [oldEmail];
+            localStorage.setItem('config_receiver_emails', JSON.stringify(receiverEmails));
+            localStorage.removeItem('config_receiver_email');
+        } else {
+            receiverEmails = [];
+        }
+    }
+
+    renderEmailChips();
+
     const savedDay = localStorage.getItem('config_schedule_day') || "5"; // Default Friday
     const savedTime = localStorage.getItem('config_schedule_time') || "18:00"; // Default 18:00
 
-    configReceiverEmail.value = savedEmail;
     configScheduleDay.value = savedDay;
     configScheduleTime.value = savedTime;
 
@@ -118,6 +141,30 @@ function initSystemConfig() {
     });
 
     updateCronPreview();
+}
+
+function renderEmailChips() {
+    emailChipsWrapper.innerHTML = '';
+    receiverEmails.forEach((email, idx) => {
+        const chip = document.createElement('div');
+        chip.className = 'email-chip';
+        chip.innerHTML = `
+            <span>${email}</span>
+            <button class="remove-chip-btn" data-index="${idx}"><i class="fa-solid fa-xmark"></i></button>
+        `;
+        emailChipsWrapper.appendChild(chip);
+    });
+
+    // Register click event listeners on remove buttons
+    document.querySelectorAll('.remove-chip-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Stop click from propagating to focus the input field
+            const idx = parseInt(btn.getAttribute('data-index'));
+            receiverEmails.splice(idx, 1);
+            localStorage.setItem('config_receiver_emails', JSON.stringify(receiverEmails));
+            renderEmailChips();
+        });
+    });
 }
 
 function updateCronPreview() {
@@ -353,10 +400,59 @@ function initEventListeners() {
         }
     });
 
-    // Listeners for System Settings Card
-    configReceiverEmail.addEventListener('input', () => {
-        localStorage.setItem('config_receiver_email', configReceiverEmail.value.trim());
+    // Listeners for System Settings Card (Multi-Email Chips)
+    emailChipsContainer.addEventListener('click', () => {
+        configReceiverEmailInput.focus();
     });
+
+    configReceiverEmailInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            let val = configReceiverEmailInput.value.trim();
+            if (val.endsWith(',')) {
+                val = val.slice(0, -1).trim();
+            }
+            if (!val) return;
+
+            // Email format regular expression validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(val)) {
+                alert("경고: 올바른 이메일 주소 형식이 아닙니다!");
+                return;
+            }
+
+            if (receiverEmails.includes(val)) {
+                alert("이미 등록된 이메일 주소입니다!");
+                configReceiverEmailInput.value = '';
+                return;
+            }
+
+            receiverEmails.push(val);
+            localStorage.setItem('config_receiver_emails', JSON.stringify(receiverEmails));
+            configReceiverEmailInput.value = '';
+            renderEmailChips();
+        } else if (e.key === 'Backspace' && configReceiverEmailInput.value === '') {
+            // Remove last chip if backspace is pressed on empty input field
+            receiverEmails.pop();
+            localStorage.setItem('config_receiver_emails', JSON.stringify(receiverEmails));
+            renderEmailChips();
+        }
+    });
+
+    configReceiverEmailInput.addEventListener('blur', () => {
+        let val = configReceiverEmailInput.value.trim();
+        if (val) {
+            if (val.endsWith(',')) val = val.slice(0, -1).trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (emailRegex.test(val) && !receiverEmails.includes(val)) {
+                receiverEmails.push(val);
+                localStorage.setItem('config_receiver_emails', JSON.stringify(receiverEmails));
+                configReceiverEmailInput.value = '';
+                renderEmailChips();
+            }
+        }
+    });
+
     configScheduleDay.addEventListener('change', () => {
         localStorage.setItem('config_schedule_day', configScheduleDay.value);
         updateCronPreview();
@@ -417,10 +513,10 @@ function initEventListeners() {
 
 // 6. DOWNLOADING CONFIG & COPYING CRON FUNCTIONS
 function downloadConfigJson() {
-    const email = configReceiverEmail.value.trim();
-    if (!email) {
-        alert("이메일 주소를 입력해 주셔야 올바른 config.json이 다운로드됩니다!");
-        configReceiverEmail.focus();
+    const emailList = receiverEmails;
+    if (emailList.length === 0) {
+        alert("수신 이메일 주소를 최소 1개 이상 입력하고 Enter나 쉼표를 눌러 등록해 주세요!");
+        configReceiverEmailInput.focus();
         return;
     }
 
@@ -428,7 +524,7 @@ function downloadConfigJson() {
     const dayIndex = parseInt(configScheduleDay.value);
     
     const configData = {
-        receiver_email: email,
+        receiver_email: emailList, // Array list export!
         schedule_day: daysEng[dayIndex],
         schedule_time: configScheduleTime.value,
         cron: cronPreview.textContent,

@@ -167,45 +167,65 @@ def send_email(html_body, latest_round):
                 config_data = json.load(f)
                 if config_data.get("receiver_email"):
                     receiver_email = config_data.get("receiver_email")
-                    print(f"📧 config.json에서 수신자 이메일 설정을 로드했습니다: {receiver_email}")
+                    print(f"📧 config.json에서 수신자 설정을 로드했습니다: {receiver_email}")
         except Exception as e:
             print(f"⚠️ config.json 로드 실패 (기본 환경 변수 적용): {e}")
+
+    # Resolve multi-recipient list
+    recipients = []
+    if isinstance(receiver_email, list):
+        recipients = list(receiver_email)
+    elif isinstance(receiver_email, str):
+        if "," in receiver_email:
+            recipients = [x.strip() for x in receiver_email.split(",") if x.strip()]
+        else:
+            recipients = [receiver_email.strip()]
+    else:
+        recipients = []
 
     # SMTP server configuration
     smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
     smtp_port = int(os.getenv("SMTP_PORT", "587"))
 
-    if not sender_email or not sender_password or not receiver_email:
-        print("Error: SMTP settings (SENDER_EMAIL, SENDER_PASSWORD, RECEIVER_EMAIL) are not fully set in the environment variables.")
+    if not sender_email or not sender_password or not recipients:
+        print("Error: SMTP settings (SENDER_EMAIL, SENDER_PASSWORD) or recipients are not fully set.")
         print("Skipping email dispatch.")
         return False
 
-    print(f"Preparing to send email to {receiver_email} from {sender_email} via {smtp_server}:{smtp_port}...")
-    
-    # Create Message
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"🍀 [AI 로또 분석 에이전트] 이번 주 {latest_round + 1}회차 예측 리포트가 도착했습니다!"
-    msg["From"] = f"AI Lotto Agent <{sender_email}>"
-    msg["To"] = receiver_email
-    
-    # Attach HTML body
-    msg.attach(MIMEText(html_body, "html"))
+    print(f"Preparing to send email to {len(recipients)} recipients from {sender_email} via {smtp_server}:{smtp_port}...")
     
     try:
-        # Establish connection with SMTP server
+        # Establish connection with SMTP server once
         server = smtplib.SMTP(smtp_server, smtp_port)
         server.starttls() # Enable security/TLS
         
         server.login(sender_email, sender_password)
         
-        # Send Email
-        server.sendmail(sender_email, receiver_email, msg.as_string())
+        success_count = 0
+        for r_email in recipients:
+            try:
+                print(f"Sending email to {r_email}...")
+                # Create a fresh message for each recipient (protecting CC/BCC leakages)
+                msg = MIMEMultipart("alternative")
+                msg["Subject"] = f"🍀 [AI 로또 분석 에이전트] 이번 주 {latest_round + 1}회차 예측 리포트가 도착했습니다!"
+                msg["From"] = f"AI Lotto Agent <{sender_email}>"
+                msg["To"] = r_email
+                
+                # Attach HTML body
+                msg.attach(MIMEText(html_body, "html"))
+                
+                # Send Email
+                server.sendmail(sender_email, r_email, msg.as_string())
+                success_count += 1
+            except Exception as se:
+                print(f"⚠️ Failed to send to {r_email}: {se}")
+                
         server.quit()
         
-        print("🎉 Email successfully sent!")
-        return True
+        print(f"🎉 Successfully sent to {success_count}/{len(recipients)} recipients!")
+        return success_count > 0
     except Exception as e:
-        print(f"❌ Failed to send email through SMTP: {e}")
+        print(f"❌ Failed to send emails through SMTP: {e}")
         return False
 
 if __name__ == "__main__":
