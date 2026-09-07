@@ -102,34 +102,15 @@ def main():
         print(f"❌ Exception in Step 4: {e}")
         sys.exit(1)
         
-    # 5. Send Email via SMTP
+    # 5. Send Email via SMTP (Commented out / Disabled by user request)
     try:
-        print("\n[Step 5/5] Dispatching Email via SMTP...")
+        print("\n[Step 5/5] Email dispatching is currently disabled (Local Database Mode).")
         latest_round = stats.get("latest_round_no", 0)
-        success = send_email(html_body, latest_round)
-        if success:
-            # Resolve receiver email for logging
-            receiver_email = os.getenv("RECEIVER_EMAIL")
-            config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "config.json")
-            if os.path.exists(config_path):
-                try:
-                    import json
-                    with open(config_path, "r", encoding="utf-8") as f:
-                        cfg = json.load(f)
-                        if cfg.get("receiver_email"):
-                            receiver_email = cfg.get("receiver_email")
-                except:
-                    pass
-            
-            # Log the successful dispatch
-            log_dispatch(latest_round + 1, receiver_email, predictions)
-            
-            print("\n🎉 AI Lotto Agent Job Completed Successfully!")
-            print("=" * 60)
-        else:
-            print("\n⚠️ Job finished but email failed to send. Check SMTP credentials.")
-            print("=" * 60)
-            sys.exit(1)
+        
+        # Save local predictions to config/history if needed, or simply log completion
+        print("Skipped SMTP email sending. Local database update and predictions rendered successfully.")
+        print(f"\n🎉 AI Lotto Agent Database Sync Job Completed Successfully for Round {latest_round}!")
+        print("=" * 60)
     except Exception as e:
         print(f"❌ Exception in Step 5: {e}")
         sys.exit(1)

@@ -80,12 +80,13 @@
                 <!-- SYSTEM CONFIGURATION CARD -->
                 <div class="card config-card">
                     <div class="card-header">
-                        <h3><i class="fa-solid fa-sliders text-accent"></i> 알림 및 발송 스케줄 설정</h3>
-                        <span class="badge badge-accent">자동화 커스텀</span>
+                        <h3><i class="fa-solid fa-sliders text-accent"></i> 나만의 로또 맞춤 조건 설정</h3>
+                        <span class="badge badge-accent">AI 추천 옵션</span>
                     </div>
                     <div class="card-body">
                         <div class="config-grid">
-                            <div class="config-item">
+                            <!-- Hidden Email Input for local compatibility -->
+                            <div class="config-item" style="display: none;">
                                 <label><i class="fa-solid fa-envelope"></i> 수신인 이메일 주소 (다중 등록 가능)</label>
                                 <div class="email-chips-input-container" id="email-chips-container" style="background-color: var(--bg-primary); border: 1px solid var(--glass-border); border-radius: var(--border-radius-sm); padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 44px; transition: border-color 0.2s; cursor: text;">
                                     <div id="email-chips-wrapper" style="display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
@@ -94,7 +95,8 @@
                                     <input type="text" id="config-receiver-email-input" placeholder="이메일 입력 후 Enter 또는 쉼표(,)" class="chips-input" style="flex:1; background:transparent; border:none; outline:none; color:var(--text-primary); font-size:13px; min-width:180px; padding:6px 0;">
                                 </div>
                             </div>
-                            <div class="config-item-row">
+                            <!-- Hidden Scheduling Row for local compatibility -->
+                            <div class="config-item-row" style="display: none;">
                                 <div class="config-item" style="flex: 1;">
                                     <label for="config-schedule-day"><i class="fa-solid fa-calendar-days"></i> 발송 요일</label>
                                     <select id="config-schedule-day" class="select-field">
@@ -150,7 +152,8 @@
                             </div>
                         </div>
 
-                        <div class="config-preview-box">
+                        <!-- Hidden Cron Preview Box -->
+                        <div class="config-preview-box" style="display: none;">
                             <p><b>스케줄러 반영 정보 (Cron Tab)</b></p>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
                                 <code id="cron-preview">0 9 * * 5</code>
@@ -158,13 +161,14 @@
                             </div>
                         </div>
 
-                        <div class="config-action-buttons">
+                        <!-- Hidden Config Action Buttons -->
+                        <div class="config-action-buttons" style="display: none;">
                             <button id="btn-download-config" class="btn btn-secondary" style="flex:1; justify-content:center;"><i class="fa-solid fa-download"></i> config.json 다운로드</button>
                             <button id="btn-copy-cron" class="btn btn-secondary" style="flex:1; justify-content:center;"><i class="fa-solid fa-copy"></i> GitHub cron 복사</button>
                         </div>
-                        <p class="config-help-text">
-                            * 💡 <b>등록된 이메일 칩을 더블 클릭(Double Click)</b>하면 즉시 이메일 주소를 수정할 수 있습니다.<br>
-                            * 다운로드받은 <code>config.json</code> 파일을 프로젝트의 <code>data/</code> 폴더에 덮어쓰기하면 수신 이메일 주소가 간편하게 적용됩니다.
+                        <p class="config-help-text" style="color: var(--text-muted); font-size:12px; margin-top:8px;">
+                            * 지정하신 생년월일시 정보는 로컬 브라우저에만 저장되며, AI 행운 번호 추출 시 맞춤 분석 기틀로 작동합니다.<br>
+                            * 나만의 고정수는 AI 분석 추출 시 조합 세트에 항상 필수로 포함됩니다.
                         </p>
                     </div>
                 </div>
@@ -209,8 +213,8 @@
                     </div>
                 </div>
 
-                <!-- DISPATCH HISTORY CARD -->
-                <div class="card history-card" style="margin-top:4px;">
+                <!-- DISPATCH HISTORY CARD (Hidden since emailing is disabled) -->
+                <div class="card history-card" style="margin-top:4px; display: none;">
                     <div class="card-header">
                         <h3><i class="fa-solid fa-clock-rotate-left text-purple"></i> 리포트 이메일 발송 이력</h3>
                         <span class="badge badge-success">서버 연동 완료</span>
