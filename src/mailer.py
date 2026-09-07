@@ -157,16 +157,29 @@ def send_email(html_body, latest_round):
     sender_email = os.getenv("SENDER_EMAIL")
     sender_password = os.getenv("SENDER_PASSWORD")
     receiver_email = os.getenv("RECEIVER_EMAIL")
-    
+
+    # Try to load custom configuration from data/config.json if it exists
+    config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "config.json")
+    if os.path.exists(config_path):
+        try:
+            import json
+            with open(config_path, "r", encoding="utf-8") as f:
+                config_data = json.load(f)
+                if config_data.get("receiver_email"):
+                    receiver_email = config_data.get("receiver_email")
+                    print(f"📧 config.json에서 수신자 이메일 설정을 로드했습니다: {receiver_email}")
+        except Exception as e:
+            print(f"⚠️ config.json 로드 실패 (기본 환경 변수 적용): {e}")
+
     # SMTP server configuration
     smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
     smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    
+
     if not sender_email or not sender_password or not receiver_email:
         print("Error: SMTP settings (SENDER_EMAIL, SENDER_PASSWORD, RECEIVER_EMAIL) are not fully set in the environment variables.")
         print("Skipping email dispatch.")
         return False
-        
+
     print(f"Preparing to send email to {receiver_email} from {sender_email} via {smtp_server}:{smtp_port}...")
     
     # Create Message

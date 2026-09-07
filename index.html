@@ -73,6 +73,56 @@
                     </div>
                 </div>
 
+                <!-- SYSTEM CONFIGURATION CARD -->
+                <div class="card config-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-sliders text-accent"></i> 알림 및 발송 스케줄 설정</h3>
+                        <span class="badge badge-accent">자동화 커스텀</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="config-grid">
+                            <div class="config-item">
+                                <label for="config-receiver-email"><i class="fa-solid fa-envelope"></i> 수신인 이메일 주소</label>
+                                <input type="email" id="config-receiver-email" placeholder="example@naver.com" class="input-field">
+                            </div>
+                            <div class="config-item-row">
+                                <div class="config-item" style="flex: 1;">
+                                    <label for="config-schedule-day"><i class="fa-solid fa-calendar-days"></i> 발송 요일</label>
+                                    <select id="config-schedule-day" class="select-field">
+                                        <option value="1">월요일 (Mon)</option>
+                                        <option value="2">화요일 (Tue)</option>
+                                        <option value="3">수요일 (Wed)</option>
+                                        <option value="4">목요일 (Thu)</option>
+                                        <option value="5" selected>금요일 (Fri)</option>
+                                        <option value="6">토요일 (Sat)</option>
+                                        <option value="0">일요일 (Sun)</option>
+                                    </select>
+                                </div>
+                                <div class="config-item" style="flex: 1;">
+                                    <label for="config-schedule-time"><i class="fa-solid fa-clock"></i> 발송 시간 (KST)</label>
+                                    <input type="time" id="config-schedule-time" value="18:00" class="input-field">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="config-preview-box">
+                            <p><b>스케줄러 반영 정보 (Cron Tab)</b></p>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                                <code id="cron-preview">0 9 * * 5</code>
+                                <span id="cron-desc" class="cron-desc">매주 금요일 18:00 KST 자동 실행</span>
+                            </div>
+                        </div>
+
+                        <div class="config-action-buttons">
+                            <button id="btn-download-config" class="btn btn-secondary" style="flex:1; justify-content:center;"><i class="fa-solid fa-download"></i> config.json 다운로드</button>
+                            <button id="btn-copy-cron" class="btn btn-secondary" style="flex:1; justify-content:center;"><i class="fa-solid fa-copy"></i> GitHub cron 복사</button>
+                        </div>
+                        <p class="config-help-text">
+                            * 다운로드받은 <code>config.json</code> 파일을 프로젝트의 <code>data/</code> 폴더에 덮어쓰기하면 수신 이메일 주소가 간편하게 적용됩니다.
+                        </p>
+                    </div>
+                </div>
+
                 <!-- AI PREDICTION GENERATOR CARD -->
                 <div class="card generator-card">
                     <div class="card-header">

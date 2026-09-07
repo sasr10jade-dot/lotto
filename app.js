@@ -18,6 +18,15 @@ const unseenNumbersContainer = document.getElementById('unseen-numbers');
 const averageSumEl = document.getElementById('average-sum');
 const oddEvenRatioEl = document.getElementById('odd-even-ratio');
 
+// SYSTEM CONFIGURATION DOM ELEMENTS
+const configReceiverEmail = document.getElementById('config-receiver-email');
+const configScheduleDay = document.getElementById('config-schedule-day');
+const configScheduleTime = document.getElementById('config-schedule-time');
+const cronPreview = document.getElementById('cron-preview');
+const cronDesc = document.getElementById('cron-desc');
+const btnDownloadConfig = document.getElementById('btn-download-config');
+const btnCopyCron = document.getElementById('btn-copy-cron');
+
 const btnGenerateAi = document.getElementById('btn-generate-ai');
 const resultsContainer = document.getElementById('generator-results-container');
 const aiGeneratorReport = document.getElementById('ai-generator-report');
@@ -32,8 +41,9 @@ const quickChips = document.querySelectorAll('.chip');
 
 // INITIALIZE APP
 window.addEventListener('DOMContentLoaded', async () => {
-    // 1. Load Gemini API Key from Local Storage
+    // 1. Load Gemini API Key and System Configuration
     initApiKey();
+    initSystemConfig();
 
     // 2. Fetch and Analyze Lotto History
     await initLottoData();
@@ -63,7 +73,48 @@ function updateApiBadge(isConfigured) {
     }
 }
 
-// 2. LOTTO DATA COLLECTION & STATS CALCULATION
+// 2. SYSTEM CONFIGURATION MANAGEMENT
+function initSystemConfig() {
+    const savedEmail = localStorage.getItem('config_receiver_email') || "";
+    const savedDay = localStorage.getItem('config_schedule_day') || "5"; // Default Friday
+    const savedTime = localStorage.getItem('config_schedule_time') || "18:00"; // Default 18:00
+
+    configReceiverEmail.value = savedEmail;
+    configScheduleDay.value = savedDay;
+    configScheduleTime.value = savedTime;
+
+    updateCronPreview();
+}
+
+function updateCronPreview() {
+    const dayVal = parseInt(configScheduleDay.value);
+    const timeVal = configScheduleTime.value; // e.g. "18:00"
+    
+    if (!timeVal) return;
+
+    const [hour, minute] = timeVal.split(':').map(Number);
+    
+    // KST is UTC + 9. Convert KST to UTC for GitHub Actions cron
+    let utcHour = hour - 9;
+    let dayOffset = 0;
+    
+    if (utcHour < 0) {
+        utcHour += 24;
+        dayOffset = -1;
+    }
+    
+    // Day of week conversion: 0=Sun, 1=Mon, ..., 6=Sat
+    let utcDay = (dayVal + dayOffset + 7) % 7;
+
+    const cronString = `${minute} ${utcHour} * * ${utcDay}`;
+    cronPreview.textContent = cronString;
+
+    // Set descriptive text
+    const daysKor = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+    cronDesc.textContent = `매주 ${daysKor[dayVal]} ${timeVal} KST 자동 실행`;
+}
+
+// 3. LOTTO DATA COLLECTION & STATS CALCULATION
 async function initLottoData() {
     try {
         console.log("Fetching lotto_history.json...");
@@ -167,7 +218,7 @@ function calculateStatistics() {
     };
 }
 
-// 3. UI RENDERING UTILS
+// 4. UI RENDERING UTILS
 function getBallColorClass(num) {
     if (1 <= num && num <= 10) return "ball-yellow";
     if (11 <= num && num <= 20) return "ball-blue";
@@ -216,7 +267,7 @@ function renderDashboard() {
     oddEvenRatioEl.textContent = lottoStats.oddEvenRatio;
 }
 
-// 4. EVENT LISTENERS SETUP
+// 5. EVENT LISTENERS SETUP
 function initEventListeners() {
     // Save API Key
     saveKeyBtn.addEventListener('click', () => {
@@ -231,6 +282,25 @@ function initEventListeners() {
             alert("저장된 API 키가 삭제되었습니다. Mock 모드로 작동합니다.");
         }
     });
+
+    // Listeners for System Settings Card
+    configReceiverEmail.addEventListener('input', () => {
+        localStorage.setItem('config_receiver_email', configReceiverEmail.value.trim());
+    });
+    configScheduleDay.addEventListener('change', () => {
+        localStorage.setItem('config_schedule_day', configScheduleDay.value);
+        updateCronPreview();
+    });
+    configScheduleTime.addEventListener('input', () => {
+        localStorage.setItem('config_schedule_time', configScheduleTime.value);
+        updateCronPreview();
+    });
+
+    // Download Config
+    btnDownloadConfig.addEventListener('click', downloadConfigJson);
+
+    // Copy Cron yaml block
+    btnCopyCron.addEventListener('click', copyCronYaml);
 
     // AI Prediction Generator Button
     btnGenerateAi.addEventListener('click', handlePredictionGeneration);
@@ -267,7 +337,51 @@ function initEventListeners() {
     });
 }
 
-// 5. INTERACTIVE COMPONENT: PREDICTION GENERATION
+// 6. DOWNLOADING CONFIG & COPYING CRON FUNCTIONS
+function downloadConfigJson() {
+    const email = configReceiverEmail.value.trim();
+    if (!email) {
+        alert("이메일 주소를 입력해 주셔야 올바른 config.json이 다운로드됩니다!");
+        configReceiverEmail.focus();
+        return;
+    }
+
+    const daysEng = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const dayIndex = parseInt(configScheduleDay.value);
+    
+    const configData = {
+        receiver_email: email,
+        schedule_day: daysEng[dayIndex],
+        schedule_time: configScheduleTime.value,
+        cron: cronPreview.textContent
+    };
+
+    const blob = new Blob([JSON.stringify(configData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'config.json';
+    document.body.appendChild(a);
+    a.click();
+    
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function copyCronYaml() {
+    const cron = cronPreview.textContent;
+    const yamlBlock = `  schedule:\n    - cron: '${cron}'`;
+    
+    navigator.clipboard.writeText(yamlBlock).then(() => {
+        alert("GitHub Actions용 스케줄 yaml 코드 블록이 클립보드에 복사되었습니다!\n\n" + yamlBlock);
+    }).catch(err => {
+        console.error("Failed to copy text: ", err);
+        alert(`클립보드 복사 실패. 아래 텍스트를 수동으로 복사하세요:\n\n${yamlBlock}`);
+    });
+}
+
+// 7. INTERACTIVE COMPONENT: PREDICTION GENERATION
 async function handlePredictionGeneration() {
     btnGenerateAi.disabled = true;
     btnGenerateAi.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> AI 분석기 가동 중... (10~15초 소요)`;
@@ -327,8 +441,8 @@ async function getGeminiPredictions(apiKey) {
 2. 각 세트는 반드시 숫자 합계가 100~170 사이여야 합니다.
 3. 홀짝 비율은 3:3, 4:2, 2:4 중 하나여야 합니다.
 4. 3개 이상 연속되는 번호 조합(예: 1, 2, 3)은 필터링하여 배제해 주세요.
-5. 'analysis_report' 섹션에는 데이터 분석가로서 왜 이번 회차에 이 번호들을 주목했는지 통계 데이터들을 논리적으로 언급하며 한국어로 유쾌하게 설명해 주세요.
-6. 'lucky_message' 섹션에는 이번 주말 복권을 사러 가는 구독자를 격려하는 센스 있고 희망찬 멘트를 한국어로 작성해 주세요.
+5. 'analysis_report' SECTION에는 데이터 분석가로서 왜 이번 회차에 이 번호들을 주목했는지 통계 데이터들을 논리적으로 언급하며 한국어로 유쾌하게 설명해 주세요.
+6. 'lucky_message' SECTION에는 이번 주말 복권을 사러 가는 구독자를 격려하는 센스 있고 희망찬 멘트를 한국어로 작성해 주세요.
 
 출력은 반드시 다른 부연 설명 없는 완벽한 JSON 포맷이어야 합니다:
 {
@@ -429,7 +543,7 @@ function renderPredictions(results) {
     predictionRows.innerHTML = rowsHtml;
 }
 
-// 6. INTERACTIVE COMPONENT: REAL-TIME COPILOT CHAT
+// 8. INTERACTIVE COMPONENT: REAL-TIME COPILOT CHAT
 async function handleSendChatMessage() {
     const msgText = chatInput.value.trim();
     if (!msgText) return;
@@ -573,7 +687,6 @@ function getMockChatResponse(msg) {
     }
 
     if (query.includes('생일') || query.includes('포함') || query.includes('추천') || query.includes('번호')) {
-        // Parse a custom number from message if possible
         const numbersInMsg = msg.match(/\d+/g);
         let included = [];
         if (numbersInMsg) {
