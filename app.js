@@ -34,6 +34,25 @@ const cronDesc = document.getElementById('cron-desc');
 const btnDownloadConfig = document.getElementById('btn-download-config');
 const btnCopyCron = document.getElementById('btn-copy-cron');
 
+// QR SCANNER DOM ELEMENTS
+const btnQrScan = document.getElementById('btn-qr-scan');
+const qrModal = document.getElementById('qr-modal');
+const btnCloseQr = document.getElementById('btn-close-qr');
+const qrVideo = document.getElementById('qr-video');
+const qrStatusText = document.getElementById('qr-status-text');
+
+const qrResultModal = document.getElementById('qr-result-modal');
+const btnCloseResult = document.getElementById('btn-close-result');
+const btnCloseResultBottom = document.getElementById('btn-close-result-bottom');
+const resultBadgeContainer = document.getElementById('result-badge-container');
+const resultTitleText = document.getElementById('result-title-text');
+const resultDescText = document.getElementById('result-desc-text');
+const resultMatchingBallsContainer = document.getElementById('result-matching-balls-container');
+
+// CAMERA STREAM STATE
+let qrStream = null;
+let qrAnimationId = null;
+
 const btnGenerateAi = document.getElementById('btn-generate-ai');
 const resultsContainer = document.getElementById('generator-results-container');
 const aiGeneratorReport = document.getElementById('ai-generator-report');
@@ -555,6 +574,12 @@ function initEventListeners() {
             handleSendChatMessage();
         });
     });
+
+    // QR Scanner Trigger Listeners
+    if (btnQrScan) btnQrScan.addEventListener('click', startQrScan);
+    if (btnCloseQr) btnCloseQr.addEventListener('click', stopQrScan);
+    if (btnCloseResult) btnCloseResult.addEventListener('click', closeResultModal);
+    if (btnCloseResultBottom) btnCloseResultBottom.addEventListener('click', closeResultModal);
 }
 
 // 6. DOWNLOADING CONFIG & COPYING CRON FUNCTIONS
@@ -1034,8 +1059,239 @@ async function initDispatchHistory() {
             <td colspan="3" style="text-align:center; padding:40px; color:var(--text-muted); font-size:12.5px; line-height:1.5;">
                 <i class="fa-solid fa-clock-rotate-left" style="font-size:22px; margin-bottom:10px; color:var(--bg-tertiary);"></i><br>
                 <b>아직 누적된 정기 자동 발송 이력이 없습니다.</b><br>
-                <span style="font-size:11px; opacity:0.75; display:inline-block; margin-top:4px;">(매주 정기 자동 발송 스케줄이 성공적으로 작동하면 이력이 여기에 자동으로 누적 기록됩니다)</span>
+                <span style="font-size:11px; opacity:0.75; display:inline-block; margin-top:4px;\">(매주 정기 자동 발송 스케줄이 성공적으로 작동하면 이력이 여기에 자동으로 누적 기록됩니다)</span>
             </td>
         </tr>`;
     }
+}
+
+// 10. REAL-TIME WEB QR CAMERA SCANNER & DECODER
+function startQrScan() {
+    // Reset video and status
+    qrVideo.srcObject = null;
+    qrStatusText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 후면 카메라 활성화 요청 중...`;
+    
+    // Open scanner modal
+    qrModal.classList.remove('hidden');
+    
+    // Request back-facing camera
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(stream => {
+            qrStream = stream;
+            qrVideo.srcObject = stream;
+            qrVideo.setAttribute("playsinline", true); // iOS Safari support
+            qrVideo.play();
+            qrStatusText.innerHTML = `<i class="fa-solid fa-qrcode fa-fade"></i> 실시간 로또 QR을 인식 중입니다...`;
+            qrAnimationId = requestAnimationFrame(scanQrFrame);
+        })
+        .catch(err => {
+            console.error("Camera access failed:", err);
+            qrStatusText.innerHTML = `<span style="color:var(--color-danger);"><i class="fa-solid fa-circle-exclamation"></i> 카메라 가동 실패: 보안 연결(HTTPS / Localhost) 상태가 아니거나 브라우저 권한을 확인해 주세요.</span>`;
+        });
+}
+
+function stopQrScan() {
+    qrModal.classList.add('hidden');
+    
+    if (qrStream) {
+        qrStream.getTracks().forEach(track => track.stop());
+        qrStream = null;
+    }
+    if (qrVideo.srcObject) {
+        qrVideo.srcObject = null;
+    }
+    if (qrAnimationId) {
+        cancelAnimationFrame(qrAnimationId);
+        qrAnimationId = null;
+    }
+}
+
+function scanQrFrame() {
+    if (!qrStream) return;
+    
+    if (qrVideo.readyState === qrVideo.HAVE_ENOUGH_DATA) {
+        const canvas = document.createElement("canvas");
+        canvas.width = qrVideo.videoWidth;
+        canvas.height = qrVideo.videoHeight;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(qrVideo, 0, 0, canvas.width, canvas.height);
+        
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert",
+        });
+        
+        if (code) {
+            console.log("Decoded QR Code data:", code.data);
+            handleDecodedQrUrl(code.data);
+            return; // Stop scanning loop on success
+        }
+    }
+    
+    if (qrStream) {
+        qrAnimationId = requestAnimationFrame(scanQrFrame);
+    }
+}
+
+function handleDecodedQrUrl(url) {
+    // 1. Stop scanner and hide camera immediately
+    stopQrScan();
+    
+    // 2. Parse round number from URL: e.g. http://m.dhlottery.co.kr/?v=1240m...
+    const roundMatch = url.match(/v=(\d{4})/i);
+    if (!roundMatch) {
+        alert("인식 오류: 동행복권 공식 로또 QR 코드가 아닙니다. 복권 상단의 사각형 QR 코드를 비춰주세요!");
+        return;
+    }
+    
+    const roundNo = parseInt(roundMatch[1]);
+    
+    // 3. Find official winning draw for this round in our history
+    const officialDraw = lottoHistory.find(x => x.drwNo === roundNo);
+    if (!officialDraw) {
+        alert(`해당 ${roundNo}회차의 당첨 결과 데이터가 아직 시스템에 적재되지 않았거나, 추첨되지 않은 미래의 회차입니다!`);
+        return;
+    }
+    
+    // 4. Extract official winning numbers
+    const officialNums = [
+        officialDraw.drwtNo1,
+        officialDraw.drwtNo2,
+        officialDraw.drwtNo3,
+        officialDraw.drwtNo4,
+        officialDraw.drwtNo5,
+        officialDraw.drwtNo6
+    ];
+    const officialBonus = officialDraw.bnusNo;
+    
+    // 5. Parse scanned combinations using regex (matches a letter followed by 12 digits)
+    const scannedSets = [];
+    const setRegex = /[a-z](\d{12})/gi;
+    let match;
+    while ((match = setRegex.exec(url)) !== null) {
+        const digitsStr = match[1]; // e.g. "091522334144"
+        const nums = [];
+        for (let i = 0; i < 12; i += 2) {
+            nums.push(parseInt(digitsStr.substring(i, i + 2)));
+        }
+        scannedSets.push(nums.sort((a, b) => a - b));
+    }
+    
+    if (scannedSets.length === 0) {
+        alert("해독 실패: QR 코드 내부의 복권 조합 번호를 해석하는 데 실패했습니다. 다시 스캔해 주세요!");
+        return;
+    }
+    
+    // 6. Compare scanned sets with official numbers
+    let highestPrize = "낙첨";
+    let highestPrizeRank = 6; // 6 is lowest (no prize), 1 is highest (1등)
+    
+    let rowsHtml = "";
+    scannedSets.forEach((set, idx) => {
+        const setLetter = String.fromCharCode(65 + idx); // A, B, C, D, E
+        let setBallsHtml = "";
+        let matchedCount = 0;
+        let isBonusMatched = false;
+        
+        set.forEach(num => {
+            const isMatched = officialNums.includes(num);
+            const isBnsMatched = (num === officialBonus);
+            
+            if (isMatched) matchedCount++;
+            if (isBnsMatched) isBonusMatched = true;
+            
+            // Render styled balls
+            const ballColor = getBallColorClass(num);
+            let style = `display: inline-block; width: 30px; height: 30px; line-height: 30px; font-size: 13px; margin: 2px;`;
+            
+            if (isMatched) {
+                // Glow effect for matched balls
+                style += `box-shadow: 0 0 10px rgba(16,185,129,0.8), inset -3px -3px 6px rgba(0,0,0,0.5); border: 2px solid #34d399; transform: scale(1.05);`;
+            } else if (isBnsMatched) {
+                // Bonus match highlight
+                style += `box-shadow: 0 0 10px rgba(99,102,241,0.8), inset -3px -3px 6px rgba(0,0,0,0.5); border: 2px solid #818cf8; transform: scale(1.05);`;
+            } else {
+                // Dim effect for unmatched balls
+                style += `opacity: 0.3; filter: grayscale(0.5);`;
+            }
+            
+            setBallsHtml += `<span class="ball ${ballColor}" style="${style}">${num}</span>`;
+        });
+        
+        // Determine Prize for this specific set
+        let setPrize = "낙첨";
+        let rank = 6;
+        
+        if (matchedCount === 6) { setPrize = "1등 (대박! 🥳)"; rank = 1; }
+        else if (matchedCount === 5 && isBonusMatched) { setPrize = "2등 (축하! 🥈)"; rank = 2; }
+        else if (matchedCount === 5) { setPrize = "3등 (축하! 🥉)"; rank = 3; }
+        else if (matchedCount === 4) { setPrize = "4등 (5만원 🎉)"; rank = 4; }
+        else if (matchedCount === 3) { setPrize = "5등 (5천원 💸)"; rank = 5; }
+        
+        if (rank < highestPrizeRank) {
+            highestPrizeRank = rank;
+            highestPrize = setPrize;
+        }
+        
+        rowsHtml += `
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.02); padding: 8px 0;">
+            <span style="font-weight:bold; color:var(--text-muted); font-size:13px; width:45px; text-align:left;">${setLetter} 게임</span>
+            <div style="display:flex; gap:2px; flex-wrap:wrap;">${setBallsHtml}</div>
+            <span class="badge ${rank <= 5 ? 'badge-success' : 'badge-unconfigured'}" style="font-size:11px; width:80px; text-align:center;">${setPrize}</span>
+        </div>`;
+    });
+    
+    // 7. Render dynamic badge based on highest prize achieved
+    let badgeClass = "badge-unconfigured";
+    let emoji = "😢";
+    
+    if (highestPrizeRank === 1) { badgeClass = "badge-success"; emoji = "👑"; }
+    else if (highestPrizeRank === 2 || highestPrizeRank === 3) { badgeClass = "badge-accent"; emoji = "🌟"; }
+    else if (highestPrizeRank === 4 || highestPrizeRank === 5) { badgeClass = "badge-success"; emoji = "🎉"; }
+    
+    resultBadgeContainer.innerHTML = `<span class="badge ${badgeClass}" style="font-size:14px; padding:6px 14px; border-radius:30px; letter-spacing:0.5px;">${emoji} 최고 결과: ${highestPrize}</span>`;
+    
+    resultTitleText.textContent = `${roundNo}회차 맞춰보기 결과`;
+    resultDescText.innerHTML = `공식 당첨 번호: <b style="color:var(--text-primary);">${officialNums.join(', ')}</b> + 보너스 <b style="color:var(--color-accent);">${officialBonus}</b>`;
+    resultMatchingBallsContainer.innerHTML = rowsHtml;
+    
+    // 8. Open results modal
+    qrResultModal.classList.remove('hidden');
+    
+    // 9. Fire Canvas Confetti Celebration!
+    if (highestPrizeRank <= 3) {
+        // High Tier Celebration (1st, 2nd, 3rd) - Multiple Intense bursts!
+        const duration = 3 * 1000;
+        const end = Date.now() + duration;
+        
+        (function frame() {
+            confetti({
+                particleCount: 4,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 }
+            });
+            confetti({
+                particleCount: 4,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 }
+            });
+            
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
+    } else if (highestPrizeRank === 4 || highestPrizeRank === 5) {
+        // Mid Tier Celebration (4th, 5th) - Single nice burst
+        confetti({
+            particleCount: 60,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+    }
+}
+
+function closeResultModal() {
+    qrResultModal.classList.add('hidden');
 }

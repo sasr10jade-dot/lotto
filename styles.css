@@ -958,3 +958,19 @@ body.light-mode ::-webkit-calendar-picker-indicator {
         padding: 6px;
     }
 }
+
+/* SCANNER AND MODAL ANIMATIONS */
+@keyframes laserScan {
+    0% { top: 0%; }
+    50% { top: 100%; }
+    100% { top: 0%; }
+}
+
+.modal-overlay {
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-overlay.hidden {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
