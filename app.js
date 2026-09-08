@@ -110,7 +110,7 @@ function updateApiBadge(isConfigured) {
         apiStatusBadge.textContent = "연동 완료 (Gemini API)";
         apiStatusBadge.className = "badge badge-success";
     } else {
-        apiStatusBadge.textContent = "미설정 (Mock 모드)";
+        apiStatusBadge.textContent = "로컬 분석 모드";
         apiStatusBadge.className = "badge badge-unconfigured";
     }
 }
@@ -444,7 +444,7 @@ function initEventListeners() {
         } else {
             localStorage.removeItem('gemini_api_key');
             updateApiBadge(false);
-            alert("저장된 API 키가 삭제되었습니다. Mock 모드로 작동합니다.");
+            alert("저장된 API 키가 삭제되었습니다. 로컬 분석 모드로 작동합니다.");
         }
     });
 
@@ -736,7 +736,7 @@ async function getGeminiPredictions(apiKey) {
         return JSON.parse(text);
     } catch (error) {
         console.error("Gemini API prediction call failed:", error);
-        alert("Gemini API 호출에 실패했습니다. API 키가 만료되었거나 올바르지 않은지 확인해 주세요. 룰 기반 Mock 모드로 임시 전환합니다.");
+        alert("Gemini API 호출에 실패했습니다. API 키가 만료되었거나 올바르지 않은지 확인해 주세요. 룰 기반 로컬 분석 모드로 임시 전환합니다.");
         return getMockPredictions();
     }
 }
@@ -777,7 +777,7 @@ function getMockPredictions() {
         }
     }
 
-    let report = `[Mock 모드] 안녕하세요, Dr. Lucky입니다! 현재 API 키가 비어 있어 저의 데이터 엔진 핵심 룰 필터만 통과한 고품질 시뮬레이션 조합을 도출했습니다. `;
+    let report = `안녕하세요, Dr. Lucky입니다! 현재 API 키가 비어 있어 저의 데이터 엔진 핵심 룰 필터만 통과한 고품질 시뮬레이션 조합을 도출했습니다. `;
     if (activeFixed.length > 0) {
         report += `특히 직접 지정하신 소중한 고정수 **[${activeFixed.join(', ')}]**번을 모든 조합 세트에 무조건 강제 포함하였으며, `;
     }
@@ -993,7 +993,7 @@ function getMockChatResponse(msg) {
         return `📊 로또 1등 당첨 확률은 약 814만분의 1로, 번개에 맞을 확률보다 낮다고 하죠! 하지만 통계적 극단값을 피해 최적의 가치를 잡는 세 가지 과학적 팁을 드릴게요:\n\n1. **홀짝 비율을 지키세요**: 역사적으로 번호 6개가 전부 홀수이거나 전부 짝수였던 회차는 단 2% 미만입니다. 가장 압도적인 비율은 **3:3** 혹은 **4:2(2:4)** 균형 비율입니다.\n2. **총합의 법칙**: 당첨 번호 6개의 총합은 항상 **100에서 170 사이**에 약 75% 이상 머무릅니다. 너무 작거나 너무 큰 합은 피하세요!\n3. **연속 번호 제한**: '1, 2, 3'처럼 3개 이상의 수가 촘촘히 붙은 경우는 역사상 거의 출현하지 않았습니다.\n\n제가 대시보드에서 추천하는 예측조합은 이 세 가지 룰을 이미 소수점 한 자리까지 계산하여 통과시킨 철옹성 조합이랍니다! 🤖`;
     }
 
-    return `💡 **[Mock 모드 알림]** Dr. Lucky의 AI 회로(Gemini API Key)가 아직 상단에 등록되지 않아, 내장된 룰 베이스 엔진으로 답변해 드렸습니다!\n\nGemini API Key를 상단 바에 등록하시면, 구독자님의 질문 흐름을 완전하게 이해하고 나아가 사주풀이, 재미있는 통계 추론, 깊이 있는 예측 코멘트까지 실시간으로 창작하여 맞대응해 드립니다. 구글 AI Studio에서 무료 키를 발급받아 붙여보세요! 🚀`;
+    return `💡 **[알림]** Dr. Lucky의 AI 회로(Gemini API Key)가 아직 상단에 등록되지 않아, 내장된 룰 베이스 엔진으로 답변해 드렸습니다!\n\nGemini API Key를 상단 바에 등록하시면, 구독자님의 질문 흐름을 완전하게 이해하고 나아가 사주풀이, 재미있는 통계 추론, 깊이 있는 예측 코멘트까지 실시간으로 창작하여 맞대응해 드립니다. 구글 AI Studio에서 무료 키를 발급받아 붙여보세요! 🚀`;
 }
 
 // 9. DISPATCH HISTORY LOG LOADING AND RENDERING
