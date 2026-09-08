@@ -189,9 +189,19 @@
                         
                         <!-- GENERATED RESULTS PREVIEW -->
                         <div id="generator-results-container" class="hidden">
-                            <div class="ai-commentary-box">
-                                <h4><i class="fa-solid fa-quote-left"></i> AI 에이전트 분석가의 코멘트</h4>
-                                <p id="ai-generator-report">번호를 추출하는 중입니다...</p>
+                            <!-- GORGEOUS COLLAPSIBLE ACCORDION FOR AI COMMENTARY -->
+                            <div class="ai-commentary-accordion" id="ai-commentary-accordion" style="margin-bottom: 12px; border: 1px solid var(--glass-border); border-radius: var(--border-radius-md); overflow: hidden; transition: all 0.3s ease;">
+                                <!-- Accordion Toggle Header -->
+                                <div class="accordion-header" id="accordion-header-toggle" style="background-color: rgba(16, 185, 129, 0.08); padding: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+                                    <h4 style="margin: 0; font-size: 13.5px; font-weight: bold; color: var(--color-primary); display: flex; align-items: center; gap: 6px;">
+                                        <span style="font-size: 16px;">🤖</span> <b>AI 분석평 (사주/통계 해설)</b>
+                                    </h4>
+                                    <i id="accordion-arrow" class="fa-solid fa-chevron-down" style="color: var(--color-primary); font-size: 12px; transition: transform 0.3s ease;"></i>
+                                </div>
+                                <!-- Accordion Body (Collapsed by Default) -->
+                                <div class="accordion-body" id="accordion-body-content" style="max-height: 0px; overflow-y: auto; background-color: rgba(16, 185, 129, 0.03); transition: max-height 0.3s ease, padding 0.3s ease; padding: 0 12px;">
+                                    <p id="ai-generator-report" style="font-size: 13px; line-height: 1.6; color: var(--text-primary); margin: 12px 0; word-break: keep-all;"></p>
+                                </div>
                             </div>
                             
                             <table class="prediction-table">

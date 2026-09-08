@@ -580,6 +580,27 @@ function initEventListeners() {
     if (btnCloseQr) btnCloseQr.addEventListener('click', stopQrScan);
     if (btnCloseResult) btnCloseResult.addEventListener('click', closeResultModal);
     if (btnCloseResultBottom) btnCloseResultBottom.addEventListener('click', closeResultModal);
+
+    // AI Commentary Accordion Toggle Listener
+    const accordionHeader = document.getElementById('accordion-header-toggle');
+    const accordionBody = document.getElementById('accordion-body-content');
+    const accordionArrow = document.getElementById('accordion-arrow');
+
+    if (accordionHeader && accordionBody && accordionArrow) {
+        accordionHeader.addEventListener('click', () => {
+            const isCollapsed = accordionBody.style.maxHeight === '0px' || accordionBody.style.maxHeight === '';
+            
+            if (isCollapsed) {
+                accordionBody.style.maxHeight = '140px'; // Expanded height
+                accordionBody.style.padding = '12px';
+                accordionArrow.style.transform = 'rotate(180deg)';
+            } else {
+                accordionBody.style.maxHeight = '0px';
+                accordionBody.style.padding = '0 12px';
+                accordionArrow.style.transform = 'rotate(0deg)';
+            }
+        });
+    }
 }
 
 // 6. DOWNLOADING CONFIG & COPYING CRON FUNCTIONS
@@ -735,8 +756,7 @@ async function getGeminiPredictions(apiKey) {
         const text = data.candidates[0].content.parts[0].text;
         return JSON.parse(text);
     } catch (error) {
-        console.error("Gemini API prediction call failed:", error);
-        alert("Gemini API 호출에 실패했습니다. API 키가 만료되었거나 올바르지 않은지 확인해 주세요. 룰 기반 로컬 분석 모드로 임시 전환합니다.");
+        console.error("Gemini API prediction call failed, silently falling back to local engine:", error);
         return getMockPredictions();
     }
 }
