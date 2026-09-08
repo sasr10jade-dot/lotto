@@ -498,6 +498,83 @@
         </div>
     </div>
 
+    <!-- SERVICE GUIDE MODAL OVERLAY -->
+    <div id="guide-modal" class="modal-overlay hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); display:flex; justify-content:center; align-items:center; z-index:1020; animation:fadeIn 0.2s ease-out;">
+        <div class="modal-content card" style="max-width:600px; width:92%; padding:24px; position:relative; max-height:80vh; display:flex; flex-direction:column; overflow:hidden;">
+            <!-- Close button -->
+            <button id="btn-close-guide" style="position:absolute; top:16px; right:16px; background:transparent; border:none; color:var(--text-muted); font-size:18px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+            
+            <h3 style="margin-bottom:16px; font-size:18px; font-weight:bold; color:var(--text-primary); border-bottom:1px solid var(--glass-border); padding-bottom:10px;"><i class="fa-solid fa-circle-info text-cyan"></i> AI LOTTO NO 이용 가이드</h3>
+            
+            <!-- Scrollable Body Content -->
+            <div class="guide-scroll-body" style="overflow-y:auto; flex-grow:1; padding-right:8px; text-align:left; font-size:13px; line-height:1.6; color:var(--text-primary); word-break:keep-all;">
+                
+                <!-- 1. 서비스 소개 -->
+                <div style="margin-bottom:20px;">
+                    <h4 style="font-size:14px; font-weight:bold; color:var(--color-primary); margin-bottom:6px;"><span style="font-size:16px;">🌟</span> 1. AI LOTTO NO 서비스 소개</h4>
+                    <p style="color:var(--text-primary); margin:0 0 8px 0;">
+                        <b>AI LOTTO NO</b>는 단순 무작위 난수 생성기를 뛰어넘어, 1회차부터 축적된 **대한민국 나눔로또 전수 통계학**과 동양의 **음양오행 운명학(사주팔자)**을 정밀 융합한 차세대 지능형 로또 분석 대시보드입니다.
+                    </p>
+                    <p style="color:var(--text-primary); margin:0;">
+                        인격화된 데이터 과학자 AI 분석 비서 **'Dr. Lucky'**가 사용자의 탄생 명식과 당일의 기운을 다차원적으로 검증하여, 순수 확률 대비 당첨 가능성을 수학적으로 극대화할 수 있는 예상 골든 조합을 무료로 실시간 추론해 드립니다.
+                    </p>
+                </div>
+                
+                <!-- 2. 오늘의 행운 비서 -->
+                <div style="margin-bottom:20px;">
+                    <h4 style="font-size:14px; font-weight:bold; color:var(--color-accent); margin-bottom:6px;"><span style="font-size:16px;">🍀</span> 2. 오늘의 행운 비서 활용법</h4>
+                    <p style="margin:0 0 6px 0;">대시보드를 켜면 오늘의 **대박 횡재 지수** 게이지가 영롱하게 회전하며 차오릅니다.</p>
+                    <ul style="margin:0; padding-left:20px; color:var(--text-muted);">
+                        <li><b>행운의 컬러/아이템</b>: 출근 전이나 복권을 사러 가기 전 데일리 드레스 코드로 매칭하여 횡재 기운을 상승시키세요!</li>
+                        <li><b>행운의 명당 방향</b>: 기입된 본인의 생년월일 명식과 당일 날짜를 해시 연산하여, 가장 횡재수가 강하게 흐르는 최적의 복권방 방향을 나침반 방향으로 제시해 줍니다.</li>
+                    </ul>
+                </div>
+
+                <!-- 3. 고정수 및 사주 가중치 예측 -->
+                <div style="margin-bottom:20px;">
+                    <h4 style="font-size:14px; font-weight:bold; color:var(--color-primary); margin-bottom:6px;"><span style="font-size:16px;">⚙️</span> 3. 맞춤 조건 설정 및 번호 추출</h4>
+                    <ul style="margin:0; padding-left:20px; color:var(--text-muted); display:flex; flex-direction:column; gap:6px;">
+                        <li><b>생년월일 및 태어난 시간</b>: 사주 명식(자시, 축시 등)을 입력하면 AI가 동양 오행사상에 비추어 금전운을 풀이하고, 명식의 기운과 조화를 이루는 길수들을 번호 조합에 가중 주입합니다.</li>
+                        <li><b>나만의 고정수</b>: 무조건 포함하고 싶은 선호 번호(최대 5개)를 선택하면, 추출되는 A~E의 **모든 5개 세트에 100% 강제 배합**됩니다!</li>
+                        <li><b>5중 수학 필터링 가동</b>: 번호 추출 버튼을 누르면 산술총합 가우스 정규분포(100~170), 이항 홀짝 분배(3:3, 4:2, 2:4), AC 연산 복잡도 검증($AC \ge 7$), 저고 균형, 3연속 숫자 필터 등 5가지 수학적 규격을 완벽하게 통과한 진짜 1등 타겟 조합만 3D 구체 공으로 팡팡 생성해 냅니다.</li>
+                    </ul>
+                </div>
+
+                <!-- 4. 실시간 AI 제미나이 대화 -->
+                <div style="margin-bottom:20px;">
+                    <h4 style="font-size:14px; font-weight:bold; color:var(--color-accent); margin-bottom:6px;"><span style="font-size:16px;">💬</span> 4. AI 제미나이 챗봇 대화 가이드</h4>
+                    <p style="margin:0 0 6px 0;">오른쪽 채팅창의 **AI 제미나이 Dr. Lucky**는 사용자의 사주와 통계 맥락을 완전히 기억하고 있는 인공지능 비서입니다.</p>
+                    <ul style="margin:0; padding-left:20px; color:var(--text-muted);">
+                        <li>*"어제 돼지꿈을 꿨는데 꿈풀이 해주고 숫자 5세트 추천해 줘"* 라고 쳐보세요! 훌륭하게 꿈을 해몽하고 꿈풀이 번호 세트를 3D 공으로 챗방에 생성해 줍니다.</li>
+                        <li>*"최근에 가장 안 나온 차가운 번호군이 뭐야?"* 등 복잡한 데이터 분석도 실시간 한글로 훌륭하게 설명해 줍니다.</li>
+                    </ul>
+                </div>
+
+                <!-- 5. 카메라 QR 맞춰보기 -->
+                <div style="margin-bottom:20px;">
+                    <h4 style="font-size:14px; font-weight:bold; color:var(--color-primary); margin-bottom:6px;"><span style="font-size:16px;">📷</span> 5. 모바일 카메라 QR 즉시 맞춰보기</h4>
+                    <p style="margin:0 0 6px 0;">실제 구매하신 복권방 종이 로또 상단의 사각형 QR 코드를 스마트폰 카메라로 비춰보세요.</p>
+                    <ul style="margin:0; padding-left:20px; color:var(--text-muted);">
+                        <li>1초 만에 당첨 등수를 가려내며, **맞은 번호는 금빛 오라로 눈부시게 번쩍이고 틀린 번호는 흑백으로 투명화 처리**되는 환상적인 3D 대조를 보여줍니다.</li>
+                        <li>1등~5등 당첨 성적에 따라 화면 전면에 다채롭고 가슴 벅찬 **종이 꽃가루(Confetti) 폭죽**이 사방으로 분사되는 축하 세레머니가 울려 퍼집니다!</li>
+                    </ul>
+                </div>
+
+                <!-- 6. 3D 행운 복권 영수증 공유 -->
+                <div style="margin-bottom:10px;">
+                    <h4 style="font-size:14px; font-weight:bold; color:var(--color-accent); margin-bottom:6px;"><span style="font-size:16px;">🎫</span> 6. 인스타/카카오톡 행운 영수증 공유</h4>
+                    <p style="margin:0;">
+                        추천이 끝나면 하단 버튼을 클릭해 나만의 **클로버 행운 복권 영수증**을 인쇄하세요. 당일 발급 시각, 사주명식, 연동된 횡재수 스코어, 5개 조합 세트가 깔끔한 아날로그 thermal monospace 폰트로 각인됩니다. 모바일 화면에서 스크린샷 캡처를 통해 소중한 지인들과 단톡방에 행운을 즉각 공유할 수 있습니다!
+                    </p>
+                </div>
+                
+            </div>
+            
+            <!-- Close Bottom Button -->
+            <button id="btn-close-guide-bottom" class="btn btn-primary btn-large" style="width:100%; justify-content:center; margin-top:14px; padding:12px;">가이드 읽기 완료</button>
+        </div>
+    </div>
+
     <!-- EXTERNAL LIBRARIES -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
