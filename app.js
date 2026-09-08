@@ -3,6 +3,7 @@ let lottoHistory = [];
 let lottoStats = {};
 let chatHistory = []; // For multi-turn conversational chat with Gemini
 let receiverEmails = []; // For multi-recipient list
+let lastPredictions = null; // For receipt generator sharing
 
 // DOM ELEMENTS
 const apiKeyInput = document.getElementById('gemini-api-key');
@@ -48,6 +49,17 @@ const resultBadgeContainer = document.getElementById('result-badge-container');
 const resultTitleText = document.getElementById('result-title-text');
 const resultDescText = document.getElementById('result-desc-text');
 const resultMatchingBallsContainer = document.getElementById('result-matching-balls-container');
+
+// RECEIPT GENERATOR DOM ELEMENTS
+const btnShareReceipt = document.getElementById('btn-share-receipt');
+const receiptModal = document.getElementById('receipt-modal');
+const btnCloseReceipt = document.getElementById('btn-close-receipt');
+const btnDownloadReceiptImg = document.getElementById('btn-download-receipt-img');
+const recDate = document.getElementById('rec-date');
+const recRound = document.getElementById('rec-round');
+const recUser = document.getElementById('rec-user');
+const recScore = document.getElementById('rec-score');
+const recPredictionRows = document.getElementById('rec-prediction-rows');
 
 // CAMERA STREAM STATE
 let qrStream = null;
@@ -602,6 +614,15 @@ function initEventListeners() {
                 accordionBody.style.padding = '0 12px';
                 accordionArrow.style.transform = 'rotate(0deg)';
             }
+        });
+    }
+
+    // AI Lucky Receipt Modal Listeners
+    if (btnShareReceipt) btnShareReceipt.addEventListener('click', openReceiptModal);
+    if (btnCloseReceipt) btnCloseReceipt.addEventListener('click', closeReceiptModal);
+    if (btnDownloadReceiptImg) {
+        btnDownloadReceiptImg.addEventListener('click', () => {
+            alert("💡 영수증 공유 안내: 모바일 환경에서는 이 영수증 이미지를 손가락으로 꾹 누르거나, 스크린샷(화면 캡처)을 통해 카카오톡 단톡방이나 인스타그램 스토리에 실시간으로 즉시 공유하실 수 있습니다! 🎫🍀");
         });
     }
 }
@@ -1404,4 +1425,47 @@ function initFortuneSecretary() {
     colorVal.textContent = colors[Math.floor(rand() * colors.length)];
     itemVal.textContent = items[Math.floor(rand() * items.length)];
     locationVal.textContent = locations[Math.floor(rand() * locations.length)];
+}
+
+// 12. LUCKY THERMAL RECEIPT MODAL LOGIC
+function openReceiptModal() {
+    if (!lastPredictions) {
+        alert("안내: 먼저 왼쪽 아래의 'AI 분석기 가동' 버튼을 눌러 추천 예측 조합 번호를 추출해 주세요! 영수증에 인쇄할 번호가 없습니다. 🎫");
+        return;
+    }
+
+    // Set Date & Time
+    const now = new Date();
+    recDate.textContent = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    
+    // Set Target Round
+    recRound.textContent = lottoStats.latestRoundNo + 1;
+    
+    // Set Custom Birth user text
+    const birthDate = localStorage.getItem('config_birth_date');
+    if (birthDate) {
+        recUser.textContent = `구독자 명식 (${birthDate})`;
+    } else {
+        recUser.textContent = `구독자 행운 명식`;
+    }
+
+    // Set Lucky Score
+    const luckyScoreText = document.getElementById('fortune-score-text').textContent;
+    recScore.textContent = luckyScoreText || "90%";
+
+    // Render numbers in beautiful Thermal Receipt Monospace rows
+    let rowsHtml = "";
+    lastPredictions.predictions.forEach((set, idx) => {
+        const letter = String.fromCharCode(65 + idx); // A, B, C, D, E
+        const paddedNums = set.map(x => String(x).padStart(2, '0')).join('   ');
+        rowsHtml += `<div style="margin: 6px 0; font-family: monospace; font-size:14.5px; font-weight:bold; color:#111; letter-spacing:0.5px;">[${letter}게임]  ${paddedNums}</div>`;
+    });
+    recPredictionRows.innerHTML = rowsHtml;
+
+    // Reveal modal
+    receiptModal.classList.remove('hidden');
+}
+
+function closeReceiptModal() {
+    receiptModal.classList.add('hidden');
 }
