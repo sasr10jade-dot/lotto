@@ -608,19 +608,19 @@ function initEventListeners() {
     const accordionArrow = document.getElementById('accordion-arrow');
 
     if (accordionHeader && accordionBody && accordionArrow) {
-        accordionHeader.addEventListener('click', () => {
-            const isCollapsed = accordionBody.style.maxHeight === '0px' || accordionBody.style.maxHeight === '';
-            
-            if (isCollapsed) {
-                accordionBody.style.maxHeight = '140px'; // Expanded height
-                accordionBody.style.padding = '12px';
-                accordionArrow.style.transform = 'rotate(180deg)';
-            } else {
-                accordionBody.style.maxHeight = '0px';
-                accordionBody.style.padding = '0 12px';
-                accordionArrow.style.transform = 'rotate(0deg)';
-            }
-        });
+       accordionHeader.addEventListener('click', () => {
+           const isCollapsed = accordionBody.style.maxHeight === '0px' || accordionBody.style.maxHeight === '';
+
+           if (isCollapsed) {
+               accordionBody.style.maxHeight = '280px'; // Expanded height (280px로 넉넉하게 확장하여 안내글 가시성 확보)
+               accordionBody.style.padding = '12px';
+               accordionArrow.style.transform = 'rotate(180deg)';
+           } else {
+               accordionBody.style.maxHeight = '0px';
+               accordionBody.style.padding = '0 12px';
+               accordionArrow.style.transform = 'rotate(0deg)';
+           }
+       });
     }
 
     // AI Lucky Receipt Modal Listeners
@@ -810,6 +810,85 @@ function initEventListeners() {
     if (btnGuideModal) btnGuideModal.addEventListener('click', () => { guideModal.classList.remove('hidden'); });
     if (btnCloseGuide) btnCloseGuide.addEventListener('click', () => { guideModal.classList.add('hidden'); });
     if (btnCloseGuideBottom) btnCloseGuideBottom.addEventListener('click', () => { guideModal.classList.add('hidden'); });
+
+    // Game 4: Spinning Wheel Trigger Click
+    const btnSpinWheel = document.getElementById('btn-spin-wheel');
+    const wheelCanvasContainer = document.getElementById('wheel-canvas-container');
+    const wheelStatusText = document.getElementById('wheel-status-text');
+    const wheelCollectedBalls = document.getElementById('wheel-collected-balls');
+    const btnResetWheel = document.getElementById('btn-reset-wheel');
+
+    let wheelCollectedNums = [];
+    let currentWheelRotation = 0;
+    let isWheelSpinning = false;
+
+    if (btnSpinWheel) {
+        btnSpinWheel.addEventListener('click', () => {
+            if (isWheelSpinning) return;
+            if (wheelCollectedNums.length >= 6) {
+                alert("이미 6개의 행운의 수 조합이 완성되었습니다! 번호를 비우고 다시 돌려주세요.");
+                return;
+            }
+            
+            isWheelSpinning = true;
+            btnSpinWheel.disabled = true;
+            btnSpinWheel.textContent = "SPIN";
+            wheelStatusText.textContent = "행운의 회전판이 세차게 회전하는 중... 🎡";
+            
+            // Generate a random angle offset (0 to 359)
+            const angleOffset = Math.floor(Math.random() * 360);
+            // Spin at least 4 full rotations (1440 deg) plus the offset
+            currentWheelRotation += 1440 + angleOffset;
+            
+            // Rotate the wheel element smooth transition
+            if (wheelCanvasContainer) {
+                wheelCanvasContainer.style.transform = `rotate(${currentWheelRotation}deg)`;
+            }
+            
+            // Wait for transition to complete (4 seconds matches transition 4s cubic-bezier in styles!)
+            setTimeout(() => {
+                // Generate a random lucky number (1-45) which is not yet collected
+                let luckyNum;
+                do {
+                    luckyNum = Math.floor(Math.random() * 45) + 1;
+                } while (wheelCollectedNums.includes(luckyNum));
+                
+                // Add to collection
+                wheelCollectedNums.push(luckyNum);
+                wheelCollectedNums.sort((a, b) => a - b);
+                
+                // Render collected mini balls
+                renderWheelCollectedBalls(wheelCollectedNums, wheelCollectedBalls, btnResetWheel);
+                
+                // Resolve Status Text
+                if (wheelCollectedNums.length < 6) {
+                    wheelStatusText.innerHTML = `🎡 축하합니다! 방금 나온 행운 번호는 **[${String(luckyNum).padStart(2, '0')}]**번 입니다! <br>(현재 ${wheelCollectedNums.length}/6개 수 수집됨)`;
+                    confetti({ particleCount: 15, spread: 35, origin: { y: 0.8 } });
+                } else {
+                    // Completed 6-number set! Jackpot!
+                    wheelStatusText.innerHTML = `🎉 **축하합니다! 6개 행운의 수 회전판 조합이 완성되었습니다!**`;
+                    
+                    // Grand Confetti Explosion!
+                    confetti({ particleCount: 100, spread: 75, origin: { y: 0.7 } });
+                    
+                    // Show reset button
+                    btnResetWheel.style.display = 'inline-block';
+                }
+                
+                btnSpinWheel.disabled = false;
+                isWheelSpinning = false;
+            }, 4100);
+        });
+    }
+
+    if (btnResetWheel) {
+        btnResetWheel.addEventListener('click', () => {
+            wheelCollectedNums = [];
+            wheelCollectedBalls.innerHTML = `<span style="font-size:11px; color:var(--text-muted); font-style:italic;">비어 있음 (번호 6개 모으기)</span>`;
+            btnResetWheel.style.display = 'none';
+            wheelStatusText.textContent = "SPIN 버튼을 눌러 나만의 회전판 추천 조합을 완성하세요!";
+        });
+    }
 }
 
 // 6. DOWNLOADING CONFIG & COPYING CRON FUNCTIONS
