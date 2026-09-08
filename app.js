@@ -76,7 +76,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     await initLottoData();
     await initDispatchHistory();
 
-    // 3. Register Event Listeners
+    // 3. Initialize Fortune Secretary (Lucky Meter, Color, Item, 명당)
+    initFortuneSecretary();
+
+    // 4. Register Event Listeners
     initEventListeners();
 });
 
@@ -1318,4 +1321,87 @@ function handleDecodedQrUrl(url) {
 
 function closeResultModal() {
     qrResultModal.classList.add('hidden');
+}
+
+// 11. WEEKLY FORTUNE SECRETARY LOGIC (Lucky Meter, Color, Item, 명당)
+function initFortuneSecretary() {
+    const gaugeCircle = document.getElementById('fortune-gauge-circle');
+    const scoreText = document.getElementById('fortune-score-text');
+    const colorVal = document.getElementById('lucky-color-val');
+    const itemVal = document.getElementById('lucky-item-val');
+    const locationVal = document.getElementById('lucky-location-val');
+
+    if (!gaugeCircle || !scoreText) return;
+
+    // Use a deterministic seed based on Birth Date and Current Date to keep it consistent for the day!
+    const birthDate = localStorage.getItem('config_birth_date') || "1995-01-01";
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    
+    // Simple hash function to generate a stable seed from birthday + today
+    let seed = 0;
+    const combinedStr = birthDate + today;
+    for (let i = 0; i < combinedStr.length; i++) {
+        seed = (seed << 5) - seed + combinedStr.charCodeAt(i);
+        seed |= 0; // Convert to 32bit integer
+    }
+    
+    // Deterministic random numbers between 0 and 1
+    const rand = () => {
+        const x = Math.sin(seed++) * 10000;
+        return x - Math.floor(x);
+    };
+
+    // 1. Calculate Lucky Score (65% to 98% for excitement!)
+    const luckyScore = Math.floor(rand() * 34) + 65;
+    
+    // 2. Animate Circular SVG Gauge
+    // Circumference = 2 * PI * r = 2 * 3.14159 * 40 = 251.2
+    const circumference = 251.2;
+    const offset = circumference - (luckyScore / 100) * circumference;
+    
+    // Trigger smooth transition after a tiny delay
+    setTimeout(() => {
+        gaugeCircle.style.strokeDashoffset = offset;
+        
+        // Count up animation for text score
+        let currentScore = 0;
+        const duration = 1500; // matches transition 1.5s
+        const startTime = performance.now();
+        
+        function animateScore(timestamp) {
+            const elapsed = timestamp - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            // Easing function outQuad
+            const easeProgress = progress * (2 - progress);
+            currentScore = Math.floor(easeProgress * luckyScore);
+            scoreText.textContent = `${currentScore}%`;
+            
+            if (progress < 1) {
+                requestAnimationFrame(animateScore);
+            } else {
+                scoreText.textContent = `${luckyScore}%`;
+            }
+        }
+        requestAnimationFrame(animateScore);
+    }, 100);
+
+    // 3. Deterministically select Lucky Color, Item, and 명당
+    const colors = [
+        "에메랄드 그린 🟢", "선명한 노랑 🟡", "로열 블루 🔵", "체리 레드 🔴", 
+        "오렌지 오라 🟠", "퍼플 크리스탈 🟣", "스카이 실버 ⚪", "메탈 크롬 ⚫"
+    ];
+    const items = [
+        "파란색 모나미 펜 ✍️", "가벼운 가죽 지갑 👛", "행운의 열쇠고리 🔑", "스마트폰 충전기 🔌", 
+        "산뜻한 텀블러 🥛", "따뜻한 커피 ☕", "가벼운 가방 🎒", "스마트 워치 ⌚", 
+        "안경 클리너 👓", "행운의 클로버 카드 🍀"
+    ];
+    const locations = [
+        "우리 집 기준 동쪽 복권방 🧭", "퇴근길 우측 길모퉁이 명당 🏪", "사람이 북적이는 사거리 명당 🚦", 
+        "강가 또는 다리 부근 복권방 🌉", "지하철역 3번 출구 앞 상가 🚉", "오래된 가로수 옆 매판소 🌳", 
+        "햇볕이 잘 드는 남향 판매점 ☀️", "언덕길 위 조용한 나들목 ⛰️"
+    ];
+
+    colorVal.textContent = colors[Math.floor(rand() * colors.length)];
+    itemVal.textContent = items[Math.floor(rand() * items.length)];
+    locationVal.textContent = locations[Math.floor(rand() * locations.length)];
 }
