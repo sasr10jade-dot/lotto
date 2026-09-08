@@ -282,6 +282,74 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- LUCKY MINI ARCADE CARD -->
+                <div class="card arcade-card" style="margin-top: 4px;">
+                    <div class="card-header" style="padding-bottom: 4px; margin-bottom: 8px; border-bottom: 1px solid var(--glass-border);">
+                        <h3><i class="fa-solid fa-gamepad text-cyan"></i> 행운의 미니 아케이드</h3>
+                        <!-- Mini Tabs -->
+                        <div class="arcade-tabs" style="display:flex; gap:6px;">
+                            <button class="arcade-tab-btn active" data-target="arcade-cookie" style="background:transparent; border:none; color:var(--text-muted); font-size:11.5px; font-weight:700; cursor:pointer; padding:2px 6px; border-radius:12px; transition:all 0.2s;">🍪 쿠키</button>
+                            <button class="arcade-tab-btn" data-target="arcade-slot" style="background:transparent; border:none; color:var(--text-muted); font-size:11.5px; font-weight:700; cursor:pointer; padding:2px 6px; border-radius:12px; transition:all 0.2s;">🎰 슬롯</button>
+                            <button class="arcade-tab-btn" data-target="arcade-rps" style="background:transparent; border:none; color:var(--text-muted); font-size:11.5px; font-weight:700; cursor:pointer; padding:2px 6px; border-radius:12px; transition:all 0.2s;">🥊 RPS</button>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding: 6px 0 0 0;">
+                        <!-- Game 1: Fortune Cookie -->
+                        <div id="arcade-cookie" class="arcade-game-panel active-panel" style="text-align:center;">
+                            <div id="cookie-wrapper" style="cursor:pointer; display:inline-block; position:relative; width:80px; height:80px; transition:transform 0.2s; margin-top:8px;">
+                                <!-- Simple HTML/CSS 3D styled Cookie using icons -->
+                                <i id="cookie-icon" class="fa-solid fa-cookie" style="font-size:65px; color:#e0a96d; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3)); transition:all 0.5s ease;"></i>
+                            </div>
+                            <div id="cookie-guide-text" style="font-size:12px; color:var(--text-muted); margin-top:8px; font-weight:500;">위의 포춘 쿠키를 더블 클릭하여 바삭 깨보세요!</div>
+                            
+                            <!-- Cookie Paper Message (Hidden by default) -->
+                            <div id="cookie-paper" class="hidden" style="background:#fffbeb; border:1px solid #fde68a; border-radius:var(--border-radius-sm); padding:10px; margin-top:10px; animation:fadeIn 0.3s ease-out; text-align:center;">
+                                <p id="cookie-message-text" style="font-size:12.5px; line-height:1.5; color:#78350f; font-style:italic; margin:0 0 6px 0; word-break:keep-all;">"오늘 당신에게 뜻밖의 행운이 찾아옵니다."</p>
+                                <div style="font-size:11.5px; color:#b45309; font-weight:bold;">🍪 쿠키의 추천 행운수: <span id="cookie-num-val" style="font-size:15px; font-weight:800; color:#e11d48; margin-left:4px;">-</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Game 2: Slot Machine -->
+                        <div id="arcade-slot" class="arcade-game-panel hidden" style="text-align:center; padding-top:4px;">
+                            <div class="slot-machine-container" style="background:var(--bg-primary); border:1.5px solid var(--glass-border); border-radius:var(--border-radius-md); padding:10px 14px; display:inline-flex; align-items:center; gap:12px; position:relative; min-width:220px; justify-content:center; margin-top:6px;">
+                                <!-- Slot Reels -->
+                                <div class="slot-reels-row" style="display:flex; gap:8px;">
+                                    <div class="slot-reel" id="reel-1" style="width:44px; height:44px; line-height:44px; background:var(--bg-secondary); border:1px solid var(--glass-border); border-radius:var(--border-radius-sm); font-size:24px; text-shadow:0 2px 4px rgba(0,0,0,0.3); font-weight:bold; transition:transform 0.1s ease;">🍀</div>
+                                    <div class="slot-reel" id="reel-2" style="width:44px; height:44px; line-height:44px; background:var(--bg-secondary); border:1px solid var(--glass-border); border-radius:var(--border-radius-sm); font-size:24px; text-shadow:0 2px 4px rgba(0,0,0,0.3); font-weight:bold; transition:transform 0.1s ease;">🍀</div>
+                                    <div class="slot-reel" id="reel-3" style="width:44px; height:44px; line-height:44px; background:var(--bg-secondary); border:1px solid var(--glass-border); border-radius:var(--border-radius-sm); font-size:24px; text-shadow:0 2px 4px rgba(0,0,0,0.3); font-weight:bold; transition:transform 0.1s ease;">🍀</div>
+                                </div>
+                                <!-- Slot Handle Lever -->
+                                <button id="btn-pull-slot" style="background:linear-gradient(135deg, var(--color-primary), var(--color-primary-hover)); border:none; border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:white; font-size:16px; box-shadow:0 4px 10px rgba(16,185,129,0.3); outline:none;"><i class="fa-solid fa-play"></i></button>
+                            </div>
+                            <div id="slot-status-text" style="font-size:11.5px; color:var(--text-muted); margin-top:10px; font-weight:500; min-height:18px;">레버(PLAY)를 눌러 슬롯을 돌리고 행운 등급을 받으세요!</div>
+                        </div>
+
+                        <!-- Game 3: Rock-Paper-Scissors (RPS) -->
+                        <div id="arcade-rps" class="arcade-game-panel hidden" style="text-align:center; padding-top:4px;">
+                            <div style="display:flex; justify-content:space-around; align-items:center; background:var(--bg-primary); padding:10px; border-radius:var(--border-radius-md); border:1px solid var(--glass-border); margin-bottom:8px; margin-top:4px;">
+                                <!-- Player Select Block -->
+                                <div style="display:flex; flex-direction:column; gap:6px; align-items:center;">
+                                    <span style="font-size:11px; color:var(--text-muted); font-weight:700;">당신의 선택</span>
+                                    <div style="display:flex; gap:6px;">
+                                        <button class="btn-rps" data-choice="rock" style="background:var(--bg-secondary); border:1px solid var(--glass-border); border-radius:50%; width:34px; height:36px; font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; outline:none; transition:all 0.2s;">✊</button>
+                                        <button class="btn-rps" data-choice="paper" style="background:var(--bg-secondary); border:1px solid var(--glass-border); border-radius:50%; width:34px; height:36px; font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; outline:none; transition:all 0.2s;">🖐️</button>
+                                        <button class="btn-rps" data-choice="scissors" style="background:var(--bg-secondary); border:1px solid var(--glass-border); border-radius:50%; width:34px; height:36px; font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; outline:none; transition:all 0.2s;">✌️</button>
+                                    </div>
+                                </div>
+                                <span style="font-size:14px; font-weight:bold; color:var(--text-muted);">VS</span>
+                                <!-- AI Select Block -->
+                                <div style="display:flex; flex-direction:column; gap:6px; align-items:center;">
+                                    <span style="font-size:11px; color:var(--text-muted); font-weight:700;">Dr. Lucky의 패</span>
+                                    <div id="rps-ai-hand" style="background:var(--bg-secondary); border:1px solid var(--glass-border); border-radius:50%; width:38px; height:38px; font-size:18px; display:flex; align-items:center; justify-content:center; font-weight:bold; transition:all 0.2s ease;">🤖</div>
+                                </div>
+                            </div>
+                            
+                            <!-- RPS Game Result Message -->
+                            <div id="rps-status-text" style="font-size:12px; color:var(--text-muted); font-weight:500; min-height:22px; word-break:keep-all; padding: 0 10px; line-height:1.4;">비서와 가위바위보 대결을 해보세요! 이기면 특수 행운수가 지급됩니다.</div>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- RIGHT PANEL: INTERACTIVE COPILOT CHAT -->
@@ -375,6 +443,51 @@
             </div>
             
             <button id="btn-close-result-bottom" class="btn btn-primary btn-large" style="width:100%; justify-content:center;">확인 완료</button>
+        </div>
+    </div>
+
+    <!-- RECEIPT MODAL OVERLAY -->
+    <div id="receipt-modal" class="modal-overlay hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); display:flex; justify-content:center; align-items:center; z-index:1010; animation:fadeIn 0.2s ease-out;">
+        <div class="modal-content card" style="max-width:400px; width:90%; padding:20px; position:relative; background-color:#ffffff; color:#333333; font-family:monospace; border-radius:var(--border-radius-md); box-shadow:0 10px 30px rgba(0,0,0,0.5); overflow:hidden;">
+            <!-- Close button -->
+            <button id="btn-close-receipt" style="position:absolute; top:12px; right:12px; background:transparent; border:none; color:#888888; font-size:18px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+            
+            <!-- THE SLICK LOTTO RECEIPT DESIGN -->
+            <div class="receipt-inner" style="border:1px dashed #dddddd; padding:16px; background-color:#fafafa; border-radius:4px; text-align:left;">
+                <div style="text-align:center; margin-bottom:12px;">
+                    <h3 style="margin:0; font-size:18px; font-weight:bold; letter-spacing:1px; color:#111111;">🎫 AI LOTTO NO RECEIPT</h3>
+                    <span style="font-size:11px; color:#666666;">- 행운 분석 연구소 공식 영수증 -</span>
+                </div>
+                <div style="border-bottom:1px dashed #cccccc; padding-bottom:8px; margin-bottom:10px; font-size:12px; line-height:1.5; color:#555555;">
+                    <div>발급일시: <span id="rec-date">-</span></div>
+                    <div>대상회차: <span id="rec-round">-</span>회차 예측</div>
+                    <div>수신인명: <span id="rec-user">구독자님 전용 명식</span></div>
+                    <div>행운지수: <span id="rec-score" style="font-weight:bold; color:#e11d48;">-%</span></div>
+                </div>
+                
+                <!-- Numbers Rows -->
+                <div style="border-bottom:1px dashed #cccccc; padding-bottom:10px; margin-bottom:10px;">
+                    <h4 style="font-size:12px; font-weight:bold; color:#111111; margin-bottom:8px;">🎯 AI 엄선 행운의 번호 (5세트)</h4>
+                    <div id="rec-prediction-rows" style="display:flex; flex-direction:column; gap:6px; font-size:13px; font-weight:bold; color:#333333;">
+                        <!-- JS will inject A~E rows here -->
+                    </div>
+                </div>
+                
+                <div style="text-align:center; padding-top:4px;">
+                    <!-- QR Placeholder / Barcode of our actual domain! -->
+                    <div style="display:inline-block; border:1px solid #ddd; padding:4px; background:#fff; border-radius:4px; margin-bottom:6px;">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https://lotto-no-jade.loca.lt" style="width:75px; height:75px; display:block;" alt="Domain QR">
+                    </div>
+                    <div style="font-size:10px; color:#888888;">스캔 시 대시보드로 즉시 이동</div>
+                    <div style="font-size:11px; font-weight:bold; color:#222222; margin-top:8px;">★ GOOD LUCK WITH YOUR Friday ★</div>
+                </div>
+            </div>
+            
+            <!-- Save/Download Button -->
+            <button id="btn-download-receipt-img" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:14px; padding:12px; font-size:13px;"><i class="fa-solid fa-floppy-disk"></i> 영수증 이미지 저장 (캡처 안내)</button>
+            <p style="font-size:10.5px; color:#777777; margin-top:8px; text-align:center; line-height:1.4;">
+                * 모바일에서는 화면을 길게 누르거나 스크린샷(캡처)을 통해 카카오톡 스토리나 인스타그램에 바로 공유하실 수 있습니다!
+            </p>
         </div>
     </div>
 

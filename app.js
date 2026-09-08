@@ -625,6 +625,180 @@ function initEventListeners() {
             alert("💡 영수증 공유 안내: 모바일 환경에서는 이 영수증 이미지를 손가락으로 꾹 누르거나, 스크린샷(화면 캡처)을 통해 카카오톡 단톡방이나 인스타그램 스토리에 실시간으로 즉시 공유하실 수 있습니다! 🎫🍀");
         });
     }
+
+    // Arcade Game Tabs Switcher Logic
+    const tabBtns = document.querySelectorAll('.arcade-tab-btn');
+    const gamePanels = document.querySelectorAll('.arcade-game-panel');
+    
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tabBtns.forEach(b => b.classList.remove('active'));
+            gamePanels.forEach(p => p.classList.add('hidden'));
+            
+            btn.classList.add('active');
+            const target = btn.getAttribute('data-target');
+            const targetPanel = document.getElementById(target);
+            if (targetPanel) {
+                targetPanel.classList.remove('hidden');
+            }
+        });
+    });
+
+    // Game 1: Fortune Cookie Click Trigger (Double Click)
+    const cookieWrapper = document.getElementById('cookie-wrapper');
+    const cookieIcon = document.getElementById('cookie-icon');
+    const cookiePaper = document.getElementById('cookie-paper');
+    const cookieMessageText = document.getElementById('cookie-message-text');
+    const cookieNumVal = document.getElementById('cookie-num-val');
+    const cookieGuideText = document.getElementById('cookie-guide-text');
+
+    if (cookieWrapper) {
+        cookieWrapper.addEventListener('dblclick', () => {
+            // Crack cookie icon animation
+            cookieIcon.style.transform = 'scale(0.85) rotate(-15deg)';
+            cookieIcon.style.color = '#c68a4c';
+            
+            const fortunes = [
+                "오늘 우주의 기운이 당신의 지갑으로 향하고 있습니다. 망설이지 마세요! 🌌",
+                "간절히 원하던 소망이 이번 금요일 예기치 못한 숫자로 피어납니다. 🍀",
+                "베풂은 더 큰 횡재수로 돌아옵니다. 오늘 만나는 이들에게 웃음을 전하세요. 😊",
+                "기회는 준비된 자에게 찾아오는 법, 오늘 당신의 직감을 무조건 믿으세요! 🎯",
+                "물처럼 부드럽게 흐르는 운세, 오늘 복권을 살 때는 소액으로 가볍게 즐기세요. 🌊",
+                "지혜로운 자는 조용히 기적을 깹니다. 오늘 조용히 복권 한 장을 쥐어보세요. 🤫"
+            ];
+            
+            const luckyNum = Math.floor(Math.random() * 45) + 1;
+            
+            cookieMessageText.textContent = `"${fortunes[Math.floor(Math.random() * fortunes.length)]}"`;
+            cookieNumVal.textContent = String(luckyNum).padStart(2, '0');
+            
+            cookiePaper.classList.remove('hidden');
+            cookieGuideText.textContent = "바삭! 포춘 쿠키 해독이 완료되었습니다. 🍪";
+            
+            // Spark mini confetti
+            confetti({ particleCount: 30, spread: 50, origin: { y: 0.8 } });
+        });
+    }
+
+    // Game 2: Slot Machine Lever Pull Trigger
+    const btnPullSlot = document.getElementById('btn-pull-slot');
+    const reel1 = document.getElementById('reel-1');
+    const reel2 = document.getElementById('reel-2');
+    const reel3 = document.getElementById('reel-3');
+    const slotStatusText = document.getElementById('slot-status-text');
+
+    let isSlotSpinning = false;
+    if (btnPullSlot) {
+        btnPullSlot.addEventListener('click', () => {
+            if (isSlotSpinning) return;
+            isSlotSpinning = true;
+            
+            btnPullSlot.disabled = true;
+            btnPullSlot.innerHTML = `<i class="fa-solid fa-sync fa-spin"></i>`;
+            slotStatusText.textContent = "릴이 어지럽게 회전하는 중... 🎰";
+
+            const emojis = ["🍀", "💎", "💰", "🍒", "7️⃣", "🌟"];
+            
+            // Spin Animation Interval
+            let spinCount = 0;
+            const spinInterval = setInterval(() => {
+                reel1.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                reel2.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                reel3.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                spinCount++;
+                
+                if (spinCount > 15) {
+                    clearInterval(spinInterval);
+                    
+                    // Final Stop Results
+                    const f1 = emojis[Math.floor(Math.random() * emojis.length)];
+                    const f2 = emojis[Math.floor(Math.random() * emojis.length)];
+                    const f3 = emojis[Math.floor(Math.random() * emojis.length)];
+                    
+                    reel1.textContent = f1;
+                    reel2.textContent = f2;
+                    reel3.textContent = f3;
+                    
+                    // Resolve Win / Loss Status
+                    if (f1 === f2 && f2 === f3) {
+                        slotStatusText.innerHTML = `🎉 **JACKPOT!!! ${f1}${f2}${f3}** 트리플 대박 당첨! 오늘 운이 머리끝까지 차오릅니다!`;
+                        confetti({ particleCount: 80, spread: 60 });
+                    } else if (f1 === f2 || f2 === f3 || f1 === f3) {
+                        slotStatusText.innerHTML = `🌟 더블 콤보 매칭 완료! (${f1 === f2 ? f1 : f2} 매치!) 오늘의 횡재 지수 보정 완료!`;
+                        confetti({ particleCount: 20, spread: 40 });
+                    } else {
+                        slotStatusText.innerHTML = `💡 아쉽게 빗나갔지만, 데이터 균형 필터 보정으로 행운수가 가득 장전되었습니다!`;
+                    }
+                    
+                    btnPullSlot.disabled = false;
+                    btnPullSlot.innerHTML = `<i class="fa-solid fa-play"></i>`;
+                    isSlotSpinning = false;
+                }
+            }, 80);
+        });
+    }
+
+    // Game 3: RPS Choice Battle
+    const rpsBtns = document.querySelectorAll('.btn-rps');
+    const rpsAiHand = document.getElementById('rps-ai-hand');
+    const rpsStatusText = document.getElementById('rps-status-text');
+
+    let isRpsPlaying = false;
+    rpsBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (isRpsPlaying) return;
+            isRpsPlaying = true;
+            
+            const playerChoice = btn.getAttribute('data-choice');
+            
+            // Reset active style
+            rpsBtns.forEach(b => {
+                b.style.borderColor = 'var(--glass-border)';
+                b.style.backgroundColor = 'var(--bg-secondary)';
+                b.style.color = 'var(--text-primary)';
+            });
+            btn.style.borderColor = 'var(--color-accent)';
+            btn.style.backgroundColor = 'rgba(99, 102, 241, 0.15)';
+            btn.style.color = '#818cf8';
+            
+            rpsAiHand.textContent = "🤖";
+            rpsAiHand.style.transform = "scale(1.2) rotate(15deg)";
+            rpsStatusText.textContent = "Dr. Lucky 비서가 신중하게 패를 고르는 중...";
+
+            setTimeout(() => {
+                const choices = ["rock", "paper", "scissors"];
+                const aiChoice = choices[Math.floor(Math.random() * choices.length)];
+                
+                // Map hand emoji
+                const emojiMap = { rock: "✊", paper: "🖐️", scissors: "✌️" };
+                rpsAiHand.textContent = emojiMap[aiChoice];
+                rpsAiHand.style.transform = "scale(1.0) rotate(0deg)";
+                
+                // Resolve Win, Loss, Draw
+                let resultText = "";
+                let didWin = false;
+                
+                if (playerChoice === aiChoice) {
+                    resultText = `🤝 무승부! 비서와 행운 기운이 완벽하게 동조되었습니다. 다시 한번 승부를 겨뤄보세요!`;
+                } else if (
+                    (playerChoice === "rock" && aiChoice === "scissors") ||
+                    (playerChoice === "paper" && aiChoice === "rock") ||
+                    (playerChoice === "scissors" && aiChoice === "paper")
+                ) {
+                    didWin = true;
+                    const secretNum = Math.floor(Math.random() * 45) + 1;
+                    resultText = `🎉 **승리!** 비서가 깜짝 놀라며 외칩니다: *"구독자님의 행운 직관에 완벽히 당했습니다! 승리 보상으로 저의 기밀 행운수 **[${String(secretNum).padStart(2, '0')}]**번을 하사합니다!"* 🏆`;
+                } else {
+                    resultText = `😢 패배! 비서가 위트 있게 미소 지으며 속삭입니다: *"저의 데이터 가속망이 비기를 숨겼습니다. 내일 기분 좋게 리벤지(Revenge)를 권장합니다!"*`;
+                }
+                
+                rpsStatusText.innerHTML = resultText;
+                if (didWin) confetti({ particleCount: 30, spread: 45, origin: { y: 0.8 } });
+                
+                isRpsPlaying = false;
+            }, 1000);
+        });
+    });
 }
 
 // 6. DOWNLOADING CONFIG & COPYING CRON FUNCTIONS
