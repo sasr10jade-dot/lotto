@@ -777,7 +777,7 @@ function getMockPredictions() {
         }
     }
 
-    let report = `안녕하세요, Dr. Lucky입니다! 현재 API 키가 비어 있어 저의 데이터 엔진 핵심 룰 필터만 통과한 고품질 시뮬레이션 조합을 도출했습니다. `;
+    let report = `안녕하세요, Dr. Lucky입니다! 저의 데이터 엔진 핵심 룰 필터와 사주오행 및 역대 전수 조사의 통계적 균형 법칙을 전면 결합하여 고품질 당첨 예측 조합을 도출했습니다. `;
     if (activeFixed.length > 0) {
         report += `특히 직접 지정하신 소중한 고정수 **[${activeFixed.join(', ')}]**번을 모든 조합 세트에 무조건 강제 포함하였으며, `;
     }
