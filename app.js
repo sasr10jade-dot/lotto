@@ -61,6 +61,12 @@ const recUser = document.getElementById('rec-user');
 const recScore = document.getElementById('rec-score');
 const recPredictionRows = document.getElementById('rec-prediction-rows');
 
+// SERVICE GUIDE DOM ELEMENTS
+const btnGuideModal = document.getElementById('btn-guide-modal');
+const guideModal = document.getElementById('guide-modal');
+const btnCloseGuide = document.getElementById('btn-close-guide');
+const btnCloseGuideBottom = document.getElementById('btn-close-guide-bottom');
+
 // CAMERA STREAM STATE
 let qrStream = null;
 let qrAnimationId = null;
@@ -799,6 +805,11 @@ function initEventListeners() {
             }, 1000);
         });
     });
+
+    // User Guide Modal Open/Close Listeners
+    if (btnGuideModal) btnGuideModal.addEventListener('click', () => { guideModal.classList.remove('hidden'); });
+    if (btnCloseGuide) btnCloseGuide.addEventListener('click', () => { guideModal.classList.add('hidden'); });
+    if (btnCloseGuideBottom) btnCloseGuideBottom.addEventListener('click', () => { guideModal.classList.add('hidden'); });
 }
 
 // 6. DOWNLOADING CONFIG & COPYING CRON FUNCTIONS
