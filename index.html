@@ -22,14 +22,17 @@
                 <button id="save-api-key" class="btn btn-secondary">저장</button>
             </div>
             <span id="api-status-badge" class="badge badge-unconfigured" style="display: none;">로컬 분석 모드</span>
-            <!-- SERVICE GUIDE BUTTON -->
-            <button id="btn-guide-modal" class="btn-theme" title="서비스 소개 및 가이드" style="background:transparent; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; padding:8px; border-radius:50%; display:flex; align-items:center; justify-content:center; outline:none; transition:background-color 0.2s; margin-right: 4px;">
-                <i class="fa-solid fa-circle-question" style="color:var(--color-primary);"></i>
-            </button>
-            <!-- THEME TOGGLE (SUN / MOON) -->
-            <button id="theme-toggle" class="btn-theme" title="테마 전환 (다크/라이트)" style="background:transparent; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; padding:8px; border-radius:50%; display:flex; align-items:center; justify-content:center; outline:none; transition:background-color 0.2s;">
-                <i id="theme-icon" class="fa-solid fa-sun" style="color:#fbbf24;"></i>
-            </button>
+            <!-- RIGHT BUTTONS GROUP (Locks Guide & Theme Toggle side-by-side) -->
+            <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                <!-- SERVICE GUIDE BUTTON -->
+                <button id="btn-guide-modal" class="btn btn-secondary" title="사용자 이용 가이드" style="border-color: var(--color-primary); color: var(--color-primary); background: rgba(16, 185, 129, 0.05); font-weight: bold; padding: 6px 12px; font-size: 12.5px; border-radius: var(--border-radius-sm); border: 1px solid var(--color-primary); outline: none; transition: all 0.2s; cursor: pointer;">
+                    <i class="fa-solid fa-circle-info"></i> 사용자 이용 가이드
+                </button>
+                <!-- THEME TOGGLE (SUN / MOON) -->
+                <button id="theme-toggle" class="btn-theme" title="테마 전환 (다크/라이트)" style="background:transparent; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; padding:8px; border-radius:50%; display:flex; align-items:center; justify-content:center; outline:none; transition:background-color 0.2s;">
+                    <i id="theme-icon" class="fa-solid fa-sun" style="color:#fbbf24;"></i>
+                </button>
+            </div>
         </header>
 
         <!-- MAIN SPA CONTENT GRID -->
