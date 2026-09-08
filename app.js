@@ -819,13 +819,13 @@ function renderPredictions(results) {
         const letter = String.fromCharCode(65 + idx); // A, B, C, D, E
         let ballsHtml = "";
         set.forEach(num => {
-            ballsHtml += `<span class="ball mini-ball ${getBallColorClass(num)}">${num}</span>`;
+            ballsHtml += `<span class="ball mini-ball ${getBallColorClass(num)}" style="display: inline-block; width: 28px; height: 28px; line-height: 28px; font-size: 13px; margin: 2px;">${num}</span>`;
         });
         rowsHtml += `
-        <tr>
-            <td>${letter} 세트</td>
-            <td><div class="balls-row" style="justify-content: flex-start; padding: 0;">${ballsHtml}</div></td>
-        </tr>`;
+        <div class="prediction-set-card">
+            <span class="set-label">${letter} 세트</span>
+            <div class="balls-row" style="justify-content: center; padding: 0; gap: 2px; flex-wrap: wrap;">${ballsHtml}</div>
+        </div>`;
     });
     predictionRows.innerHTML = rowsHtml;
 }
