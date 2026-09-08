@@ -177,7 +177,7 @@ html, body {
     background-color: var(--bg-secondary);
     border-radius: var(--border-radius-lg);
     border: 1px solid var(--glass-border);
-    padding: 20px;
+    padding: 16px; /* 20px -> 16px 패딩을 슬림화하여 화면 세로 공간 극대화 */
     box-shadow: var(--shadow-md);
     transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -191,8 +191,8 @@ html, body {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--glass-border);
-    padding-bottom: 12px;
-    margin-bottom: 16px;
+    padding-bottom: 8px; /* 12px -> 8px */
+    margin-bottom: 12px; /* 16px -> 12px */
 }
 
 .card-header h3 {
@@ -371,12 +371,14 @@ html, body {
 
 /* GENERATOR PREVIEW */
 #generator-results-container {
-    margin-top: 20px;
+    margin-top: 16px;
     border-top: 1px solid var(--glass-border);
-    padding-top: 20px;
+    padding-top: 16px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
+    max-height: 380px; /* 전체 추천 영역의 세로 최대 높이를 고정하여 세로 오버플로우 전면 차단 */
+    overflow-y: auto;  /* 추천 내역이 길어지면 박스 내부에서 부드럽게 스크롤 작동 */
     animation: fadeIn 0.4s ease-out;
 }
 
@@ -384,7 +386,9 @@ html, body {
     background-color: rgba(16, 185, 129, 0.05);
     border-left: 4px solid var(--color-primary);
     border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
-    padding: 16px;
+    padding: 12px;
+    max-height: 130px; /* AI의 상세 횡재수 운세 해설 박스 세로 길이 최대 고정 */
+    overflow-y: auto;  /* 글씨가 길어질 경우 상자 내부 스크롤로 가시성 극대화 */
 }
 
 .ai-commentary-box h4, .lucky-quote-box h4 {
