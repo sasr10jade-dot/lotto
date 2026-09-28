@@ -360,13 +360,14 @@ function calculateStatistics() {
         .slice(0, 5)
         .map(x => x.num);
 
-    // Longest Unseen Numbers (All-time tracking)
+    // Longest Unseen Numbers (All-time tracking, includes bonus ball appearances)
     const lastSeen = Array(46).fill(totalRounds);
     lottoHistory.forEach(draw => {
         const roundNo = draw.drwNo;
         numberCols.forEach(col => {
             lastSeen[draw[col]] = totalRounds - roundNo; // Draws ago
         });
+        lastSeen[draw.bnusNo] = totalRounds - roundNo;
     });
 
     const longestUnseen = lastSeen

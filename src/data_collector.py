@@ -210,6 +210,7 @@ def get_lotto_statistics(history, recent_weeks_list=[5, 10, 20]):
         for col in number_cols:
             num = int(row[col])
             last_seen[num] = total_rounds - draw_no
+        last_seen[int(row["bnusNo"])] = total_rounds - draw_no
             
     sorted_last_seen = sorted(last_seen.items(), key=lambda x: x[1], reverse=True)
     stats["longest_unseen_numbers"] = [{"number": k, "draws_ago": v} for k, v in sorted_last_seen[:10]]
