@@ -16118,5 +16118,44 @@
     "bnusNo": 27,
     "firstWinamnt": 1791817758,
     "firstPrzwnerCo": 16
+  },
+  {
+    "drwNo": 1241,
+    "drwNoDate": "2026-09-12",
+    "drwtNo1": 7,
+    "drwtNo2": 13,
+    "drwtNo3": 16,
+    "drwtNo4": 23,
+    "drwtNo5": 24,
+    "drwtNo6": 43,
+    "bnusNo": 9,
+    "firstWinamnt": 1628391980,
+    "firstPrzwnerCo": 18
+  },
+  {
+    "drwNo": 1242,
+    "drwNoDate": "2026-09-19",
+    "drwtNo1": 2,
+    "drwtNo2": 4,
+    "drwtNo3": 10,
+    "drwtNo4": 16,
+    "drwtNo5": 31,
+    "drwtNo6": 41,
+    "bnusNo": 9,
+    "firstWinamnt": 3281029250,
+    "firstPrzwnerCo": 9
+  },
+  {
+    "drwNo": 1243,
+    "drwNoDate": "2026-09-26",
+    "drwtNo1": 9,
+    "drwtNo2": 18,
+    "drwtNo3": 24,
+    "drwtNo4": 38,
+    "drwtNo5": 43,
+    "drwtNo6": 44,
+    "bnusNo": 35,
+    "firstWinamnt": 2592525282,
+    "firstPrzwnerCo": 12
   }
 ]

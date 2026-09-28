@@ -1,0 +1,37 @@
+name: Update Lotto History
+
+on:
+  schedule:
+    # 매주 일요일 00:30 KST (토요일 15:30 UTC) - 토요일 추첨 결과가 반영된 뒤 실행
+    - cron: "30 15 * * 6"
+  workflow_dispatch: {}
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Fetch latest lotto history
+        run: python -c "from src.data_collector import update_lotto_history; update_lotto_history()"
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet -- data/lotto_history.json; then
+            git add data/lotto_history.json
+            git commit -m "chore: update lotto history with latest draw results"
+            git push
+          else
+            echo "No changes to commit."
+          fi

@@ -122,43 +122,39 @@ def fetch_single_draw_data(draw_no):
     return None
 
 def update_lotto_history():
-    """Fetch all missing rounds and update local lotto_history.json using bulk API or single API fallback."""
+    """Refresh local lotto_history.json from the official bulk API (always authoritative for the latest round)."""
     history = load_local_history()
-    
-    # If history is empty, try to bootstrap using the bulk API
-    if not history:
-        print("Local history file not found or empty. Bootstrapping entire database using bulk API...")
-        history = bootstrap_all_history()
-        if history:
-            save_local_history(history)
-            return history
-        else:
-            print("Failed to bootstrap using bulk API. Falling back to single-round downloads...")
-    
-    # Check if there are new draws
     last_round = history[-1]["drwNo"] if history else 0
     print(f"Current local database has up to round {last_round}.")
-    
-    current_round = last_round + 1
-    new_rounds_added = 0
-    
-    while True:
-        print(f"Fetching round {current_round}...")
-        data = fetch_single_draw_data(current_round)
-        if data is None:
-            print(f"Round {current_round} fetch returned None (or fail). Stopping update.")
-            break
-        
-        history.append(data)
-        new_rounds_added += 1
-        current_round += 1
-        time.sleep(0.1)
-        
-    if new_rounds_added > 0:
-        save_local_history(history)
-    else:
-        print("No new rounds found. Database is up to date.")
-        
+
+    fresh_history = bootstrap_all_history()
+
+    if not fresh_history:
+        print("Bulk API returned nothing. Falling back to single-round downloads...")
+        current_round = last_round + 1
+        new_rounds_added = 0
+        while True:
+            print(f"Fetching round {current_round}...")
+            data = fetch_single_draw_data(current_round)
+            if data is None:
+                print(f"Round {current_round} fetch returned None (or fail). Stopping update.")
+                break
+            history.append(data)
+            new_rounds_added += 1
+            current_round += 1
+            time.sleep(0.1)
+        if new_rounds_added > 0:
+            save_local_history(history)
+        else:
+            print("No new rounds found. Database is up to date.")
+        return history
+
+    if len(fresh_history) > last_round:
+        print(f"Bulk API has {len(fresh_history)} rounds (local had {last_round}). Updating local database.")
+        save_local_history(fresh_history)
+        return fresh_history
+
+    print("No new rounds found. Database is up to date.")
     return history
 
 def get_lotto_statistics(history, recent_weeks_list=[5, 10, 20]):
