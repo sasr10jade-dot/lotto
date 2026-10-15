@@ -4,6 +4,8 @@
 - 한국 시간(KST) 날짜를 시드로 쓰므로 같은 날에는 언제 실행해도 같은 번호가 나온다.
 - 규칙은 predictor.py의 규칙 기반 예측과 같다: 합계 100~170, 홀수 2~4개, 3연속 번호 금지.
 - 다른 서비스(Aura 등)가 이 JSON을 읽어 간다. 필드를 바꿀 때는 읽는 쪽도 함께 확인할 것.
+  - sets: 오늘의 기본 5세트
+  - weights: 1~45번 각각의 통계 가중치(45개, 1.0~2.0). 읽는 쪽이 자기 기준(예: 사용자별 보정)으로 번호를 다시 뽑을 때 쓴다
 """
 import json
 import os
@@ -75,10 +77,12 @@ def main():
     history = load_history()
     latest = history[-1]
     today = datetime.now(KST).date().isoformat()
+    weights = recent_weights(history)
     result = {
         "date": today,
         "round": int(latest["drwNo"]) + 1,
-        "sets": build_sets(today, recent_weights(history)),
+        "sets": build_sets(today, weights),
+        "weights": [round(w, 3) for w in weights],
         "note": "통계 규칙으로 만든 참고용 번호이며 당첨을 보장하지 않습니다.",
     }
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
