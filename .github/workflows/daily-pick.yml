@@ -1,0 +1,35 @@
+name: Daily Lucky Numbers
+
+on:
+  schedule:
+    # 매일 00:05 KST (전날 15:05 UTC) - 한국 날짜가 바뀐 직후에 그날의 행운번호를 만든다
+    - cron: "5 15 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  daily-pick:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate today's lucky numbers
+        run: python src/daily_pick.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet -- data/daily_pick.json; then
+            git add data/daily_pick.json
+            git commit -m "chore: daily lucky numbers"
+            git pull --rebase
+            git push
+          else
+            echo "No changes to commit."
+          fi
