@@ -9,5 +9,10 @@ export interface TranslationResult {
 export interface ITranslationService {
   name: string;
   engine: TranslationEngine;
-  translate(text: string, tone?: TranslationTone): Promise<TranslationResult>;
+  translate(
+    text: string,
+    sourceLang?: string,
+    targetLang?: string,
+    tone?: TranslationTone
+  ): Promise<TranslationResult>;
 }

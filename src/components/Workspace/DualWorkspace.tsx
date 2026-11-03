@@ -2,10 +2,15 @@ import React from 'react';
 import { InputPanel } from './InputPanel';
 import { OutputPanel } from './OutputPanel';
 import { AudioVisualizerService } from '../../services/audioVisualizer';
-import { TranslationEngine, TranslationStatus, TranslationTone } from '../../types';
+import { SupportedLang, TargetLang, TranslationEngine, TranslationStatus, TranslationTone, ViewMode } from '../../types';
 import './Workspace.css';
 
 interface DualWorkspaceProps {
+  // Lang props
+  sourceLang: SupportedLang;
+  targetLang: TargetLang;
+  viewMode: ViewMode;
+
   // Input props
   sourceText: string;
   interimText: string;
@@ -33,6 +38,9 @@ interface DualWorkspaceProps {
 }
 
 export const DualWorkspace: React.FC<DualWorkspaceProps> = ({
+  sourceLang,
+  targetLang,
+  viewMode,
   sourceText,
   interimText,
   isListening,
@@ -56,12 +64,14 @@ export const DualWorkspace: React.FC<DualWorkspaceProps> = ({
   onRetry,
 }) => {
   return (
-    <div className="workspace-container">
+    <div className={`workspace-container mode-${viewMode}`}>
       <div className="workspace-grid">
-        {/* Left 50%: Large Input Panel */}
+        {/* Left Input Panel */}
         <InputPanel
           text={sourceText}
           interimText={interimText}
+          sourceLang={sourceLang}
+          targetLang={targetLang}
           isListening={isListening}
           volume={volume}
           visualizerService={visualizerService}
@@ -73,9 +83,10 @@ export const DualWorkspace: React.FC<DualWorkspaceProps> = ({
           onPasteClipboard={onPasteClipboard}
         />
 
-        {/* Right 50%: Large Output Panel */}
+        {/* Right Output Panel */}
         <OutputPanel
           translatedText={translatedText}
+          targetLang={targetLang}
           status={status}
           engine={engine}
           tone={tone}

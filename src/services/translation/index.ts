@@ -1,4 +1,4 @@
-import { AppSettings, TranslationTone } from '../../types';
+import { AppSettings, SupportedLang, TargetLang, TranslationTone } from '../../types';
 import { FreeTranslatorService } from './freeTranslator';
 import { GeminiTranslatorService } from './geminiTranslator';
 import { ITranslationService, TranslationResult } from './types';
@@ -16,24 +16,23 @@ export class TranslationManager {
   public async translate(
     text: string,
     settings: AppSettings,
+    sourceLang: SupportedLang = 'auto',
+    targetLang: TargetLang = 'ko',
     overrideTone?: TranslationTone
   ): Promise<TranslationResult> {
     const tone = overrideTone || settings.tone;
     const service = this.getService(settings);
 
     try {
-      return await service.translate(text, tone);
+      return await service.translate(text, sourceLang, targetLang, tone);
     } catch (err: any) {
       // Gemini 모드였는데 실패한 경우 무료 모드로 graceful fallback 시도
       if (settings.engine === 'gemini') {
         try {
-          const fallback = await this.freeService.translate(text);
-          return {
-            ...fallback,
-            // Fallback 표시를 위해 유지
-          };
+          const fallback = await this.freeService.translate(text, sourceLang, targetLang);
+          return fallback;
         } catch {
-          // Fallback도 실패하면 원래 에러 throw
+          // Fallback도 실패 시 원래 에러 throw
         }
       }
       throw err;

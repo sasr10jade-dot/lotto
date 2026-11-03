@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Volume2, VolumeX, Copy, Check, Clock, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
-import { TranslationStatus, TranslationEngine, TranslationTone } from '../../types';
+import { TranslationStatus, TranslationEngine, TranslationTone, TargetLang } from '../../types';
 
 interface OutputPanelProps {
   translatedText: string;
+  targetLang: TargetLang;
   status: TranslationStatus;
   engine: TranslationEngine;
   tone: TranslationTone;
@@ -17,6 +18,7 @@ interface OutputPanelProps {
 
 export const OutputPanel: React.FC<OutputPanelProps> = ({
   translatedText,
+  targetLang,
   status,
   engine,
   tone,
@@ -44,9 +46,9 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
   const getToneLabel = (t: TranslationTone) => {
     switch (t) {
       case 'polite':
-        return '정중한 존댓말';
+        return '정중한 어조';
       case 'casual':
-        return '친근한 반말';
+        return '친근한 어조';
       case 'formal':
         return '격식 보고체';
       case 'natural':
@@ -55,13 +57,17 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
     }
   };
 
+  const isKoTarget = targetLang === 'ko';
+
   return (
     <div className="workspace-panel output-panel">
       {/* Panel Top bar */}
       <div className="panel-header">
         <div className="panel-header-left">
-          <span className="lang-tag ko">KOREAN</span>
-          <span className="panel-title">실시간 한국어 번역</span>
+          <span className={`lang-tag ${isKoTarget ? 'ko' : 'en'}`}>
+            {isKoTarget ? '한국어 (KO)' : '영어 (EN)'}
+          </span>
+          <span className="panel-title">{isKoTarget ? '실시간 한국어 번역' : '실시간 영어 번역'}</span>
         </div>
 
         {/* Translation Meta & Font controls */}

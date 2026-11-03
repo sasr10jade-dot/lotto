@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mic, MicOff, Maximize2, Volume2, Sparkles, Sliders, ArrowDownCircle } from 'lucide-react';
-import { TranslationRecord, TranslationEngine } from '../../types';
+import { TranslationRecord, TranslationEngine, SupportedLang, TargetLang } from '../../types';
 import './MeetingHUD.css';
 
 interface MeetingHUDProps {
@@ -10,6 +10,8 @@ interface MeetingHUDProps {
   recentRecords: TranslationRecord[];
   isListening: boolean;
   engine: TranslationEngine;
+  sourceLang: SupportedLang;
+  targetLang: TargetLang;
   onToggleMic: () => void;
   onExitHUD: () => void;
   onSpeak: (text: string) => void;
@@ -22,6 +24,8 @@ export const MeetingHUD: React.FC<MeetingHUDProps> = ({
   recentRecords,
   isListening,
   engine,
+  sourceLang,
+  targetLang,
   onToggleMic,
   onExitHUD,
   onSpeak,
@@ -140,25 +144,25 @@ export const MeetingHUD: React.FC<MeetingHUDProps> = ({
         {/* Current Active Subtitle (Highlighted) */}
         <div className="hud-current-box">
           <div className="hud-source-line">
-            <span className="hud-lang-label">EN</span>
+            <span className="hud-lang-label">{sourceLang === 'auto' ? 'AUTO' : sourceLang.toUpperCase()}</span>
             <p className="hud-source-text">
               {currentEnglish}
               {interimEnglish && <span className="hud-interim"> {interimEnglish}</span>}
               {!currentEnglish && !interimEnglish && (
                 <span className="hud-placeholder">
-                  {isListening ? '화상 회의에서 상대방이 말하는 영어가 실시간으로 감지됩니다...' : '마이크를 켜면 실시간 자막이 시작됩니다.'}
+                  {isListening ? '실시간 음성이 감지되면 여기에 자막이 시작됩니다...' : '마이크를 켜면 실시간 자막이 시작됩니다.'}
                 </span>
               )}
             </p>
           </div>
 
           <div className="hud-target-line">
-            <span className="hud-lang-label ko">KO</span>
+            <span className="hud-lang-label ko">{targetLang.toUpperCase()}</span>
             <p className="hud-target-text">
               {currentKorean ? (
                 currentKorean
               ) : (
-                <span className="hud-placeholder">실시간 한국어 번역 자막이 여기에 표시됩니다.</span>
+                <span className="hud-placeholder">실시간 번역 자막이 여기에 표시됩니다.</span>
               )}
             </p>
             {currentKorean && (

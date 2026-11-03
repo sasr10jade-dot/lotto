@@ -3,7 +3,7 @@ import { TranslationTone } from '../../types';
 import { ITranslationService, TranslationResult } from './types';
 
 export class GeminiTranslatorService implements ITranslationService {
-  public name = 'Gemini AI 번역';
+  public name = 'Gemini AI 실시간 번역';
   public engine = 'gemini' as const;
   private apiKey: string;
   private modelName: string;
@@ -13,21 +13,39 @@ export class GeminiTranslatorService implements ITranslationService {
     this.modelName = modelName;
   }
 
-  private getToneInstruction(tone: TranslationTone = 'natural'): string {
-    switch (tone) {
-      case 'polite':
-        return '공손하고 정중한 존댓말(해요체/하십시오체)로 번역하세요.';
-      case 'casual':
-        return '친근하고 편안한 반말 대화체로 자연스럽게 번역하세요.';
-      case 'formal':
-        return '비즈니스 및 공식 문서에 적합한 격식 있는 보고체(하십시오체/명확한 어조)로 번역하세요.';
-      case 'natural':
-      default:
-        return '실제 한국인이 일상에서 말하듯 가장 자연스럽고 매끄러운 표준 한국어로 번역하세요.';
+  private getToneInstruction(tone: TranslationTone = 'natural', isKoToEn: boolean): string {
+    if (isKoToEn) {
+      switch (tone) {
+        case 'formal':
+          return 'Translate into professional business English suitable for executive meetings and formal presentations.';
+        case 'casual':
+          return 'Translate into relaxed, friendly everyday conversational English.';
+        case 'polite':
+        case 'natural':
+        default:
+          return 'Translate into natural, clear, idiomatic conversational English as spoken by native speakers in professional meetings.';
+      }
+    } else {
+      switch (tone) {
+        case 'polite':
+          return '상대방을 존중하는 정중하고 예의 바른 존댓말(해요체/하십시오체)로 번역하세요.';
+        case 'casual':
+          return '친구끼리 대화하듯 편안하고 자연스러운 반말 구어체로 번역하세요.';
+        case 'formal':
+          return '격식 있는 비즈니스 및 공식 문서/보고체(하십시오체)로 번역하세요.';
+        case 'natural':
+        default:
+          return '어색한 직역이나 번역투를 완전히 배제하고, 실제 한국인이 일상 및 비즈니스 회의에서 사용하는 가장 자연스러운 한국어로 번역하세요.';
+      }
     }
   }
 
-  public async translate(text: string, tone: TranslationTone = 'natural'): Promise<TranslationResult> {
+  public async translate(
+    text: string,
+    sourceLang: string = 'auto',
+    targetLang: string = 'ko',
+    tone: TranslationTone = 'natural'
+  ): Promise<TranslationResult> {
     const trimmed = text.trim();
     if (!trimmed) {
       return { translatedText: '', engine: 'gemini', latencyMs: 0 };
@@ -37,31 +55,39 @@ export class GeminiTranslatorService implements ITranslationService {
       throw new Error('Gemini API 키가 설정되지 않았습니다. 우측 상단 [설정]에서 API Key를 입력해 주세요.');
     }
 
+    const isKoToEn = targetLang === 'en' || (sourceLang === 'auto' && /[가-힣]/.test(trimmed));
+    const toneGuide = this.getToneInstruction(tone, isKoToEn);
     const startTime = performance.now();
+
     try {
       const genAI = new GoogleGenerativeAI(this.apiKey);
       const model = genAI.getGenerativeModel({
         model: this.modelName || 'gemini-1.5-flash',
         generationConfig: {
-          temperature: 0.2, // 정확하고 일관된 번역을 위한 낮은 temperature
+          temperature: 0.25, // 문맥의 자연스러움과 일관성의 최적 균형
         },
       });
 
-      const toneGuide = this.getToneInstruction(tone);
-      const prompt = `System Instruction:
-You are an expert English-to-Korean real-time translator.
-Translate the following English speech/text into natural Korean.
-Style guideline: ${toneGuide}
-Important:
-- Return ONLY the translated Korean text.
-- Do NOT add quotes, markdown formatting, apologies, or explanatory notes.
+      const prompt = `You are a world-class real-time bilingual translator between English and Korean for video conferences and business collaboration.
+Translation Direction: ${isKoToEn ? 'Korean to English' : 'English to Korean'}
+Style Guide: ${toneGuide}
 
-English Source:
+Strict Rules:
+1. Translate faithfully and idiomatically. Avoid rigid word-for-word translation.
+2. Output ONLY the translated text.
+3. Absolutely NO explanations, no romanization, no formatting tags, no markdown codeblocks, no surrounding quotation marks.
+
+Original text:
 ${trimmed}`;
 
       const result = await model.generateContent(prompt);
       const response = await result.response;
-      const translatedText = response.text().trim();
+      let translatedText = response.text().trim();
+
+      // 따옴표나 불필요한 줄바꿈 정돈
+      if (translatedText.startsWith('"') && translatedText.endsWith('"')) {
+        translatedText = translatedText.slice(1, -1);
+      }
 
       const latencyMs = Math.round(performance.now() - startTime);
 

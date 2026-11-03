@@ -15,11 +15,33 @@ export class SpeechRecognitionService {
   private recognition: any = null;
   private isListeningActive = false;
   private shouldAutoRestart = true;
+  private currentLang: 'en-US' | 'ko-KR' = 'en-US';
   private callbacks: SpeechRecognitionCallbacks;
 
-  constructor(callbacks: SpeechRecognitionCallbacks) {
+  constructor(callbacks: SpeechRecognitionCallbacks, initialLang: 'en-US' | 'ko-KR' = 'en-US') {
     this.callbacks = callbacks;
+    this.currentLang = initialLang;
     this.initRecognition();
+  }
+
+  public setLang(lang: 'en-US' | 'ko-KR') {
+    if (this.currentLang === lang) return;
+    this.currentLang = lang;
+    const wasListening = this.isListeningActive;
+    if (this.recognition) {
+      this.shouldAutoRestart = false;
+      try {
+        this.recognition.abort();
+      } catch {}
+    }
+    this.initRecognition();
+    if (wasListening) {
+      this.start();
+    }
+  }
+
+  public getLang(): 'en-US' | 'ko-KR' {
+    return this.currentLang;
   }
 
   public static isSupported(): boolean {
@@ -38,7 +60,7 @@ export class SpeechRecognitionService {
 
     try {
       this.recognition = new SpeechRecognitionClass();
-      this.recognition.lang = 'en-US';
+      this.recognition.lang = this.currentLang || 'en-US';
       this.recognition.continuous = true;
       this.recognition.interimResults = true;
       this.recognition.maxAlternatives = 1;

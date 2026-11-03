@@ -1,0 +1,24 @@
+{
+  "name": "LiveLingua KR - 실시간 양방향 번역기",
+  "short_name": "LiveLingua",
+  "description": "화상 회의 및 업무를 위한 실시간 영한/한영 음성 & 텍스트 번역기",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0f19",
+  "theme_color": "#6366f1",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

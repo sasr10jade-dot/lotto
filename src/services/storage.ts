@@ -12,6 +12,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   ttsVoiceRate: 1.0,
   continuousListening: true,
   debounceMs: 500,
+  defaultViewMode: 'normal',
 };
 
 export const StorageService = {
